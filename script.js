@@ -1,10 +1,22 @@
 const boardEl = document.getElementById("board");
-const BOARD_SIZE = 3;
+const playerXScoreEl = document.getElementById("player-x-score");
+const playerOScoreEl = document.getElementById("player-o-score");
+const drawsCountEl = document.getElementById("draws-count");
+const resetBtn = document.getElementById("reset-btn");
 
 let gameBoard = [],
   isX = true,
-  isEnded = false;
+  isEnded = false,
+  clicksCount = 0;
 
+const BOARD_SIZE = 3;
+const score = {
+  x: 0,
+  o: 0,
+  draws: 0,
+};
+
+resetBtn.addEventListener("click", resetGame);
 boardEl.addEventListener("click", (e) => {
   if (isEnded) return e.preventDefault();
 
@@ -17,9 +29,27 @@ boardEl.addEventListener("click", (e) => {
     btn.dataset.key = key;
     gameBoard[rowid][colid] = key;
     isX = !isX;
+    clicksCount += 1;
+    setTurnIndicator();
   }
 
-  isEnded = hasWinner(gameBoard, [Number(rowid), Number(colid)], key);
+  const hasWinKey = hasWinner(gameBoard, [Number(rowid), Number(colid)], key),
+    hasBoardFullfiled = clicksCount === BOARD_SIZE * BOARD_SIZE;
+
+  isEnded = hasWinKey || hasBoardFullfiled;
+
+  if (isEnded) {
+    if (hasWinKey) {
+      score[key] += 1;
+    }
+
+    if (hasBoardFullfiled) {
+      score.draws += 1;
+    }
+
+    drawScore();
+    // initGameBoard();
+  }
 });
 
 initGameBoard();
@@ -96,8 +126,24 @@ function hasWinner(board = [], coords = [0, 0], k = "") {
 function initGameBoard() {
   isEnded = false;
   isX = true;
+  clicksCount = 0;
   renderBoardHTML(BOARD_SIZE);
   gameBoard = getBoardTemplate(BOARD_SIZE);
+  setTurnIndicator();
+}
+
+function drawScore() {
+  playerXScoreEl.textContent = `${score.x} Wins`;
+  playerOScoreEl.textContent = `${score.o} Wins`;
+  drawsCountEl.textContent = score.draws;
+}
+
+function resetGame() {
+  score.x = 0;
+  score.y = 0;
+  score.draws = 0;
+  drawScore();
+  initGameBoard();
 }
 
 function classNames(deps) {
@@ -108,4 +154,14 @@ function classNames(deps) {
   });
 
   return classes.length ? classes.filter((v) => v) : "";
+}
+
+function setTurnIndicator() {
+  document
+    .querySelector(`.player-${isX ? "x" : "o"}.turn-indicator`)
+    .classList.add("active");
+
+  document
+    .querySelector(`.player-${!isX ? "x" : "o"}.turn-indicator`)
+    .classList.remove("active");
 }

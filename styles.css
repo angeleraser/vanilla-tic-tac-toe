@@ -185,7 +185,7 @@ body,
   #app {
     border: 3px solid var(--light-turquoise);
     box-shadow: 0 -2px 20px #ecf7f9;
-    border-radius: 6px;
+    border-radius: 12px;
     padding: 60px;
   }
 

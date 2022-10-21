@@ -19,30 +19,30 @@
       <div class="score">
         <div class="player player-x">
           <span class="player-key">X</span>
-          <span class="player-score" id="player-x-count">0 wins</span>
+          <span class="player-score" id="player-x-score">0 wins</span>
         </div>
 
         <div class="player player-draw">
           <span class="player-key">Draws</span>
-          <span class="player-score" id="player-draw-count">0</span>
+          <span class="player-score" id="draws-count">0</span>
         </div>
 
         <div class="player player-o">
           <span class="player-key">O</span>
-          <span class="player-score" id="player-o-count">0 wins</span>
+          <span class="player-score" id="player-o-score">0 wins</span>
         </div>
       </div>
       <div id="board" class="board"></div>
 
       <div class="actions">
-        <button class="reset-btn">Reset</button>
+        <button id="reset-btn" class="reset-btn">Reset</button>
 
         <div class="current-turn-container">
           Your turn:
 
           <div class="current-turn-player">
-            <span class="player-x">x</span>
-            <span class="player-o">o</span>
+            <span class="player-x turn-indicator">x</span>
+            <span class="player-o turn-indicator">o</span>
           </div>
         </div>
       </div>
