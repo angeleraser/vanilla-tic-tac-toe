@@ -11,42 +11,77 @@
   --gray: #a4b5b8;
   --dark-gray: #8b8b8b;
   --blue: #277ed0;
-  --turquoise: #277ed0;
+  --turquoise: #39bcd4;
+  --light-turquoise: #b7e5ee;
 }
 
 body,
-html {
+html,
+#app {
   width: 100%;
   height: 100%;
   min-height: 100vh;
 }
 
-body {
+body,
+#app {
+  align-items: center;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
+}
+
+#app {
+  font-family: "Noto Sans Vai", sans-serif;
+  max-height: 860px;
+  max-width: 600px;
+  min-height: 720px;
+  min-width: 360px;
+  height: 100%;
+  padding: 30px;
 }
 
 .board {
   display: grid;
   width: max-content;
   margin: 0 auto;
-  height: 100%;
+  height: 70%;
   width: 100%;
   max-height: 600px;
-  min-width: 360px;
-  padding: 20px;
+  margin: 48px 0;
+}
+
+.board,
+.score {
+  max-width: 460px;
 }
 
 .board-btn {
-  width: 100%;
-  height: 100%;
-  font-size: 80px;
-  line-height: 0;
-  border: 0.5px solid var(--gray);
   background-color: transparent;
+  border: 2px solid var(--light-gray);
+  cursor: pointer;
+  font-family: "Noto Sans Vai", sans-serif;
+  font-size: 60px;
+  font-weight: 700;
+  height: 100%;
+  line-height: 0;
   outline: none;
+  text-transform: uppercase;
+  width: 100%;
+}
+
+.board-btn[data-key="x"],
+.player-x {
+  color: var(--blue);
+}
+
+.board-btn[data-key="o"],
+.player-o {
+  color: var(--turquoise);
+}
+
+.player-draw {
+  color: var(--dark-gray);
 }
 
 .btn-corner-left {
@@ -65,17 +100,66 @@ body {
   border-bottom: none;
 }
 
-.board-btn:hover {
+.score {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  justify-content: space-between;
+  font-weight: 700;
+  padding-bottom: 24px;
+}
+
+.player {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-transform: uppercase;
+}
+
+.player-key {
+  font-size: 32px;
+}
+
+.player-score {
+  font-size: 16px;
+}
+
+.player-draw .player-key {
+  font-size: 24px;
+}
+
+.reset-btn {
+  font-family: "Noto Sans Vai", sans-serif;
+  background-color: transparent;
+  color: var(--dark-gray);
+  border: none;
+  font-weight: 700;
+  font-size: 24px;
+  text-decoration: underline;
   cursor: pointer;
 }
 
 @media (min-width: 1024px) {
+  #app {
+    border: 3px solid var(--light-turquoise);
+    box-shadow: 0 -2px 20px #ecf7f9;
+    border-radius: 6px;
+    padding: 60px;
+  }
+
   .board {
-    max-width: 600px;
     max-height: 720px;
   }
 
   .board-btn {
-    font-size: 100px;
+    font-size: 80px;
+  }
+
+  .player-key {
+    font-size: 38px;
+  }
+
+  .player-score {
+    font-size: 20px;
   }
 }

@@ -10,7 +10,7 @@ boardEl.addEventListener("click", (e) => {
 
   const { target: btn } = e;
   const { rowid, colid } = btn.dataset;
-  const key = isX ? "X" : "O";
+  const key = isX ? "x" : "o";
 
   if (!btn.dataset.key) {
     btn.textContent = key;

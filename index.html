@@ -5,10 +5,39 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="./styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+Vai&display=swap"
+      rel="stylesheet"
+    />
+
     <title>Local</title>
   </head>
   <body>
-    <div id="board" class="board"></div>
+    <div id="app">
+      <div class="score">
+        <div class="player player-x">
+          <span class="player-key">X</span>
+          <span class="player-score" id="player-x-count">0 wins</span>
+        </div>
+
+        <div class="player player-draw">
+          <span class="player-key">Draws</span>
+          <span class="player-score" id="player-draw-count">0</span>
+        </div>
+
+        <div class="player player-o">
+          <span class="player-key">O</span>
+          <span class="player-score" id="player-o-count">0 wins</span>
+        </div>
+      </div>
+      <div id="board" class="board"></div>
+
+      <div class="actions">
+        <button class="reset-btn">Reset</button>
+      </div>
+    </div>
     <script src="./script.js"></script>
   </body>
 </html>
