@@ -37,7 +37,7 @@ function hasWinner(board = [], coords = [0, 0], k = "") {
 
   for (let i = 0; i < board.length; i++) {
     y.push(board[i][coords[1]]);
-    x.push(board[i][coords[0]]);
+    x.push(board[coords[0]][i]);
 
     const isCorner =
       (coords[1] === board.length - 1 || !coords[1]) &&
@@ -45,7 +45,7 @@ function hasWinner(board = [], coords = [0, 0], k = "") {
 
     if (isCorner) {
       const ci = coords[1] - i;
-      const b = coords[0] ? [...board].reverse() : board;
+      const b = coords[0] ? board.slice(0).reverse() : board;
       z.push(b[i][ci > 0 ? ci : Math.abs(ci)]);
     }
   }
@@ -58,11 +58,13 @@ function hasWinner(board = [], coords = [0, 0], k = "") {
 }
 
 function initGameBoard() {
+  isEnded = false;
+  isX = true;
   renderBoardHTML(BOARD_SIZE);
   gameBoard = getBoardTemplate(BOARD_SIZE);
 }
 
-const BOARD_SIZE = 3;
+const BOARD_SIZE = 7;
 
 let gameBoard = [],
   isX = true,
