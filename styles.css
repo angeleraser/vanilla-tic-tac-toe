@@ -49,6 +49,7 @@ body,
   width: 100%;
   max-height: 600px;
   margin: 48px 0;
+  position: relative;
 }
 
 .board,
@@ -68,6 +69,70 @@ body,
   outline: none;
   text-transform: uppercase;
   width: 100%;
+}
+
+.board[data-winline^="x"]::after,
+.board[data-winline^="y"]::after,
+.board[data-winline^="z"]::after {
+  background-color: var(--dark-gray);
+  border-radius: 6px;
+  content: "";
+  position: absolute;
+}
+
+.board[data-winline^="x"]::after {
+  left: 50%;
+  translate: -50%;
+  height: 8px;
+  width: 90%;
+}
+
+.board[data-winline="x0"]::after {
+  top: 15%;
+}
+
+.board[data-winline="x1"]::after {
+  top: 50%;
+}
+
+.board[data-winline="x2"]::after {
+  top: 82.5%;
+}
+
+.board[data-winline^="y"]::after,
+.board[data-winline^="z"]::after {
+  height: 90%;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  width: 8px;
+}
+
+.board[data-winline="y0"]::after {
+  left: 16.5%;
+}
+
+.board[data-winline="y1"]::after {
+  left: 50%;
+}
+
+.board[data-winline="y2"]::after {
+  left: 83.5%;
+}
+
+.board[data-winline^="z"]::after {
+  transform-origin: center;
+  height: 110%;
+}
+
+.board[data-winline="z00"]::after,
+.board[data-winline="z22"]::after {
+  rotate: -35.5deg;
+}
+
+.board[data-winline="z20"]::after,
+.board[data-winline="z02"]::after {
+  rotate: 35.5deg;
 }
 
 .board-btn[data-key="x"],
@@ -203,5 +268,16 @@ body,
 
   .player-score {
     font-size: 20px;
+  }
+
+  .board[data-winline="z00"]::after,
+  .board[data-winline="z22"]::after {
+    rotate: -44deg;
+    height: 120%;
+  }
+
+  .board[data-winline="z20"]::after,
+  .board[data-winline="z02"]::after {
+    rotate: 45.5deg;
   }
 }

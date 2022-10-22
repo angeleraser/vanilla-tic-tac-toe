@@ -33,22 +33,27 @@ boardEl.addEventListener("click", (e) => {
     setTurnIndicator();
   }
 
-  const hasWinKey = hasWinner(gameBoard, [Number(rowid), Number(colid)], key),
-    hasBoardFullfiled = clicksCount === BOARD_SIZE * BOARD_SIZE;
+  const axies = getWinnerAxies(gameBoard, [Number(rowid), Number(colid)], key),
+    hasBoardFullfiled = clicksCount === BOARD_SIZE * BOARD_SIZE,
+    hasWinKey = hasWinner(Object.values(axies), key);
 
   isEnded = hasWinKey || hasBoardFullfiled;
 
   if (isEnded) {
     if (hasWinKey) {
       score[key] += 1;
+      drawWinnerLine(axies, { x: rowid, y: colid }, key);
     }
 
     if (hasBoardFullfiled) {
       score.draws += 1;
     }
 
-    drawScore();
-    // initGameBoard();
+    setTimeout(() => {
+      hasWinKey && alert(`${key.toUpperCase()} wins!`);
+      drawScore();
+      initGameBoard();
+    }, 500);
   }
 });
 
@@ -98,7 +103,7 @@ function renderBoardHTML(size = 0) {
   buttons.flat(1).forEach((btn) => boardEl.appendChild(btn));
 }
 
-function hasWinner(board = [], coords = [0, 0], k = "") {
+function getWinnerAxies(board = [], coords = [0, 0], k = "") {
   const [x, y, z] = [[], [], []];
 
   for (let i = 0; i < board.length; i++) {
@@ -116,17 +121,22 @@ function hasWinner(board = [], coords = [0, 0], k = "") {
     }
   }
 
+  return { x, y, z };
+}
+
+function hasWinner(coords, k) {
   function hasMatch(arr = []) {
     return !(arr.length < 3) && arr.every((v) => v === k);
   }
 
-  return hasMatch(x) || hasMatch(y) || hasMatch(z);
+  return coords.some(hasMatch);
 }
 
 function initGameBoard() {
   isEnded = false;
   isX = true;
   clicksCount = 0;
+  boardEl.dataset.winline = "";
   renderBoardHTML(BOARD_SIZE);
   gameBoard = getBoardTemplate(BOARD_SIZE);
   setTurnIndicator();
@@ -164,4 +174,18 @@ function setTurnIndicator() {
   document
     .querySelector(`.player-${!isX ? "x" : "o"}.turn-indicator`)
     .classList.remove("active");
+}
+
+function drawWinnerLine(axies, coords, key) {
+  const [axis] = Object.entries(axies).find((el) => {
+    const [, matches] = el;
+    return matches.every((v) => v === key);
+  });
+
+  if (axis === "z") {
+    boardEl.dataset["winline"] = `${axis}${coords.x}${coords.y}`;
+    return;
+  }
+
+  boardEl.dataset["winline"] = `${axis}${coords[axis]}`;
 }
