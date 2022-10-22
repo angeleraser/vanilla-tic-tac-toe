@@ -1,7 +1,4 @@
 const boardEl = document.getElementById("board");
-const playerXScoreEl = document.getElementById("player-x-score");
-const playerOScoreEl = document.getElementById("player-o-score");
-const drawsCountEl = document.getElementById("draws-count");
 const resetBtn = document.getElementById("reset-btn");
 
 let gameBoard = [],
@@ -9,14 +6,18 @@ let gameBoard = [],
   isEnded = false,
   movesCount = 0;
 
-const BOARD_SIZE = 3;
+const BOARD_SIZE = 5;
 const score = {
   x: 0,
   o: 0,
   draws: 0,
 };
 
-resetBtn.addEventListener("click", resetGame);
+resetBtn.addEventListener("click", () => {
+  resetAllStats();
+  init();
+});
+
 boardEl.addEventListener("click", (e) => {
   if (isEnded) return e.preventDefault();
 
@@ -30,23 +31,23 @@ boardEl.addEventListener("click", (e) => {
     gameBoard[rowid][colid] = key;
     isX = !isX;
     movesCount += 1;
-    setTurnIndicator();
+    setTurnIndicatorHTML();
   }
 
-  const axies = getBoardKeyAxis(gameBoard, [Number(rowid), Number(colid)], key);
-  const hasWinKey = hasWinner(axies, key);
+  const axies = getBoardAxis(gameBoard, [Number(rowid), Number(colid)], key);
+  const hasWinKey = hasWinner(Object.values(axies), key);
   const isFullfiled = movesCount === BOARD_SIZE * BOARD_SIZE;
 
   isEnded = hasWinKey || isFullfiled;
 
-  if (isEnded && hasWinKey) return updateGameScore(key);
+  if (isEnded && hasWinKey) return updateScore(key);
 
-  if (isEnded && isFullfiled) return updateGameScore("draw");
+  if (isEnded && isFullfiled) return updateScore("draw");
 });
 
-initGameBoard();
+init();
 
-function createBoardBtn(rowId = 0, colId = 0, boardSize) {
+function createBoardPad(rowId = 0, colId = 0, boardSize) {
   const btn = document.createElement("button");
   const isCorner = colId === 0 || colId === boardSize - 1;
 
@@ -67,7 +68,7 @@ function createBoardBtn(rowId = 0, colId = 0, boardSize) {
   return btn;
 }
 
-function getBoardTemplate(size = 0) {
+function createBoardTemplate(size = 0) {
   const board = [];
 
   for (let i = 0; i < size; i++) {
@@ -81,16 +82,7 @@ function getBoardTemplate(size = 0) {
   return board;
 }
 
-function renderBoardHTML(size = 0) {
-  const buttons = getBoardTemplate(size).map((r, ri) =>
-    r.map((c, ci) => createBoardBtn(ri, ci, size))
-  );
-  boardEl.style.gridTemplateColumns = "1fr ".repeat(buttons.length);
-  boardEl.innerHTML = "";
-  buttons.flat(1).forEach((btn) => boardEl.appendChild(btn));
-}
-
-function getBoardKeyAxis(board = [], coords = [0, 0], k = "") {
+function getBoardAxis(board = [], coords = [0, 0], k = "") {
   const [x, y, z] = [[], [], []];
 
   for (let i = 0; i < board.length; i++) {
@@ -108,7 +100,7 @@ function getBoardKeyAxis(board = [], coords = [0, 0], k = "") {
     }
   }
 
-  return [x, y, z];
+  return { x, y, z };
 }
 
 function hasWinner(axies = [], k = "") {
@@ -119,38 +111,63 @@ function hasWinner(axies = [], k = "") {
   return axies.some(hasMatch);
 }
 
-function initGameBoard() {
+function init() {
+  resetTurnStats();
+  renderBoardHTML(BOARD_SIZE);
+  setTurnIndicatorHTML();
+}
+
+function resetTurnStats() {
   isEnded = false;
   isX = true;
   movesCount = 0;
-  boardEl.dataset.winline = "";
+  gameBoard = createBoardTemplate(BOARD_SIZE);
   renderBoardHTML(BOARD_SIZE);
-  gameBoard = getBoardTemplate(BOARD_SIZE);
-  setTurnIndicator();
 }
 
-function drawScore() {
-  playerXScoreEl.textContent = `${score.x} Wins`;
-  playerOScoreEl.textContent = `${score.o} Wins`;
-  drawsCountEl.textContent = score.draws;
-}
-
-function resetGame() {
+function resetAllStats() {
   score.x = 0;
   score.y = 0;
   score.draws = 0;
-  drawScore();
-  initGameBoard();
+  resetTurnStats();
+  Object.keys(score).forEach(drawScoreHTML);
 }
 
-function updateGameScore(key = "") {
+function updateScore(key = "") {
   score[key] += 1;
+  const msg = key === "draw" ? "Is a draw!" : `${key.toUpperCase()} wins!`;
 
   setTimeout(() => {
-    key !== "draw" && alert(`${key.toUpperCase()} wins!`);
-    drawScore();
-    initGameBoard();
+    alert(msg);
+    drawScoreHTML(key);
+    resetTurnStats();
   }, 500);
+}
+
+function drawScoreHTML(key = "") {
+  const suffix = key !== "draws" ? " Wins" : "";
+  const el = document.getElementById(`${key}-score`);
+  el && (el.textContent = `${score[key]}${suffix}`);
+}
+
+function renderBoardHTML(size = 0) {
+  const buttons = createBoardTemplate(size).map((r, ri) =>
+    r.map((c, ci) => createBoardPad(ri, ci, size))
+  );
+  boardEl.innerHTML = "";
+  boardEl.dataset.boardsize = size;
+  boardEl.style.gridTemplateColumns = "1fr ".repeat(buttons.length);
+  buttons.flat(1).forEach((btn) => boardEl.appendChild(btn));
+}
+
+function setTurnIndicatorHTML() {
+  document
+    .querySelector(`.player-${isX ? "x" : "o"}-indicator`)
+    .classList.add("active");
+
+  document
+    .querySelector(`.player-${!isX ? "x" : "o"}-indicator`)
+    .classList.remove("active");
 }
 
 function classNames(deps) {
@@ -161,14 +178,4 @@ function classNames(deps) {
   });
 
   return classes.length ? classes.filter((v) => v) : "";
-}
-
-function setTurnIndicator() {
-  document
-    .querySelector(`.player-${isX ? "x" : "o"}-indicator`)
-    .classList.add("active");
-
-  document
-    .querySelector(`.player-${!isX ? "x" : "o"}-indicator`)
-    .classList.remove("active");
 }
