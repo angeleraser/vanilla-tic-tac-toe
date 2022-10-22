@@ -19,7 +19,6 @@
 
 .board-pad {
   border: 2px solid var(--light-gray);
-  font-size: 60px;
   height: 100%;
   width: 100%;
   text-transform: uppercase;
@@ -46,9 +45,17 @@
   color: var(--blue);
 }
 
+.board-pad[data-key="x"].board-pad-match {
+  background-color: var(--light-blue);
+}
+
 .board-pad[data-key="o"],
 .player-o {
   color: var(--turquoise);
+}
+
+.board-pad[data-key="o"].board-pad-match {
+  background-color: var(--light-turquoise-2);
 }
 
 .player-draw {
@@ -133,9 +140,5 @@
 @media (min-width: 1024px) {
   .board-container {
     max-height: 720px;
-  }
-
-  .board-pad {
-    font-size: 40px;
   }
 }
