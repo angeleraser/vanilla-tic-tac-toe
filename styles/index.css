@@ -1,0 +1,31 @@
+@import url("./reset-min.css");
+@import url("./variables.css");
+@import url("./board.css");
+
+body,
+#app {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+#app {
+  font-family: "Noto Sans Vai", sans-serif;
+  max-height: 860px;
+  max-width: 600px;
+  min-height: 720px;
+  min-width: 360px;
+  width: 100%;
+  height: 100%;
+  padding: 30px;
+}
+
+@media (min-width: 1024px) {
+  #app {
+    border: 3px solid var(--light-turquoise);
+    box-shadow: 0 -2px 20px #ecf7f9;
+    border-radius: 12px;
+    padding: 60px;
+  }
+}

@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="./styles.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -12,11 +11,13 @@
       rel="stylesheet"
     />
 
+    <link rel="stylesheet" href="./styles/index.css" />
+
     <title>Local</title>
   </head>
   <body>
     <div id="app">
-      <div class="score">
+      <div class="score-container">
         <div class="player player-x">
           <span class="player-key">X</span>
           <span class="player-score" id="player-x-score">0 wins</span>
@@ -32,17 +33,17 @@
           <span class="player-score" id="player-o-score">0 wins</span>
         </div>
       </div>
-      <div id="board" class="board"></div>
+      <div id="board" class="board-container"></div>
 
-      <div class="actions">
+      <div class="board-actions-container">
         <button id="reset-btn" class="reset-btn">Reset</button>
 
-        <div class="current-turn-container">
-          Your turn:
+        <div class="turn-indicator-container">
+          Current turn:
 
-          <div class="current-turn-player">
-            <span class="player-x turn-indicator">x</span>
-            <span class="player-o turn-indicator">o</span>
+          <div class="turn-indicator">
+            <span class="player-x-indicator">x</span>
+            <span class="player-o-indicator">o</span>
           </div>
         </div>
       </div>

@@ -7,7 +7,7 @@ const resetBtn = document.getElementById("reset-btn");
 let gameBoard = [],
   isX = true,
   isEnded = false,
-  clicksCount = 0;
+  movesCount = 0;
 
 const BOARD_SIZE = 3;
 const score = {
@@ -29,32 +29,19 @@ boardEl.addEventListener("click", (e) => {
     btn.dataset.key = key;
     gameBoard[rowid][colid] = key;
     isX = !isX;
-    clicksCount += 1;
+    movesCount += 1;
     setTurnIndicator();
   }
 
-  const axies = getWinnerAxies(gameBoard, [Number(rowid), Number(colid)], key),
-    hasBoardFullfiled = clicksCount === BOARD_SIZE * BOARD_SIZE,
-    hasWinKey = hasWinner(Object.values(axies), key);
+  const axies = getBoardKeyAxis(gameBoard, [Number(rowid), Number(colid)], key);
+  const hasWinKey = hasWinner(axies, key);
+  const isFullfiled = movesCount === BOARD_SIZE * BOARD_SIZE;
 
-  isEnded = hasWinKey || hasBoardFullfiled;
+  isEnded = hasWinKey || isFullfiled;
 
-  if (isEnded) {
-    if (hasWinKey) {
-      score[key] += 1;
-      drawWinnerLine(axies, { x: rowid, y: colid }, key);
-    }
+  if (isEnded && hasWinKey) return updateGameScore(key);
 
-    if (hasBoardFullfiled) {
-      score.draws += 1;
-    }
-
-    setTimeout(() => {
-      hasWinKey && alert(`${key.toUpperCase()} wins!`);
-      drawScore();
-      initGameBoard();
-    }, 500);
-  }
+  if (isEnded && isFullfiled) return updateGameScore("draw");
 });
 
 initGameBoard();
@@ -64,14 +51,14 @@ function createBoardBtn(rowId = 0, colId = 0, boardSize) {
   const isCorner = colId === 0 || colId === boardSize - 1;
 
   const classes = classNames({
-    "btn-corner-bottom": rowId === boardSize - 1,
-    "btn-corner-left": colId === 0,
-    "btn-corner-right": colId === boardSize - 1,
-    "btn-corner-top": rowId === 0,
-    "btn-corner": isCorner,
+    "board-pad-bottom": rowId === boardSize - 1,
+    "board-pad-left": colId === 0,
+    "board-pad-right": colId === boardSize - 1,
+    "board-pad-top": rowId === 0,
+    "board-pad": isCorner,
   });
 
-  btn.classList.add("board-btn");
+  btn.classList.add("board-pad");
   classes.length && btn.classList.add(...classes);
   btn.dataset.rowid = rowId;
   btn.dataset.colid = colId;
@@ -103,7 +90,7 @@ function renderBoardHTML(size = 0) {
   buttons.flat(1).forEach((btn) => boardEl.appendChild(btn));
 }
 
-function getWinnerAxies(board = [], coords = [0, 0], k = "") {
+function getBoardKeyAxis(board = [], coords = [0, 0], k = "") {
   const [x, y, z] = [[], [], []];
 
   for (let i = 0; i < board.length; i++) {
@@ -121,21 +108,21 @@ function getWinnerAxies(board = [], coords = [0, 0], k = "") {
     }
   }
 
-  return { x, y, z };
+  return [x, y, z];
 }
 
-function hasWinner(coords, k) {
+function hasWinner(axies = [], k = "") {
   function hasMatch(arr = []) {
     return !(arr.length < 3) && arr.every((v) => v === k);
   }
 
-  return coords.some(hasMatch);
+  return axies.some(hasMatch);
 }
 
 function initGameBoard() {
   isEnded = false;
   isX = true;
-  clicksCount = 0;
+  movesCount = 0;
   boardEl.dataset.winline = "";
   renderBoardHTML(BOARD_SIZE);
   gameBoard = getBoardTemplate(BOARD_SIZE);
@@ -156,6 +143,16 @@ function resetGame() {
   initGameBoard();
 }
 
+function updateGameScore(key = "") {
+  score[key] += 1;
+
+  setTimeout(() => {
+    key !== "draw" && alert(`${key.toUpperCase()} wins!`);
+    drawScore();
+    initGameBoard();
+  }, 500);
+}
+
 function classNames(deps) {
   const classes = Object.entries(deps).map((item, i) => {
     const [key, value] = item;
@@ -168,24 +165,10 @@ function classNames(deps) {
 
 function setTurnIndicator() {
   document
-    .querySelector(`.player-${isX ? "x" : "o"}.turn-indicator`)
+    .querySelector(`.player-${isX ? "x" : "o"}-indicator`)
     .classList.add("active");
 
   document
-    .querySelector(`.player-${!isX ? "x" : "o"}.turn-indicator`)
+    .querySelector(`.player-${!isX ? "x" : "o"}-indicator`)
     .classList.remove("active");
-}
-
-function drawWinnerLine(axies, coords, key) {
-  const [axis] = Object.entries(axies).find((el) => {
-    const [, matches] = el;
-    return matches.every((v) => v === key);
-  });
-
-  if (axis === "z") {
-    boardEl.dataset["winline"] = `${axis}${coords.x}${coords.y}`;
-    return;
-  }
-
-  boardEl.dataset["winline"] = `${axis}${coords[axis]}`;
 }
