@@ -11,7 +11,8 @@ const resetBtn = document.getElementById("reset-btn");
 let gameBoard = [],
   isX = true,
   isEnded = false,
-  movesCount = 0;
+  movesCount = 0,
+  msgDelay = 800;
 
 const score = {
   x: 0,
@@ -26,11 +27,14 @@ function drawScoreHTML(key = "") {
 }
 
 function setWinnerPadsColor(axis = []) {
-  axis.forEach((p) => {
-    const [r, c] = p;
-    document
-      .querySelector(`[data-rowid='${r}'][data-colid='${c}']`)
-      .classList.add("board-pad-match");
+  axis.forEach((p, i) => {
+    const btn = document.querySelector(
+      `[data-rowid='${p[0]}'][data-colid='${p[1]}']`
+    );
+
+    msgDelay += (i + 1) * 10;
+    btn.classList.add("board-pad-match");
+    btn.style.transitionDelay = `${(i + 1) / 10}s`;
   });
 }
 
@@ -72,7 +76,7 @@ function createBoardPad(rowId = 0, colId = 0, boardSize) {
   btn.dataset.colid = colId;
   btn.dataset.key = "";
 
-  const boardWidth = boardEl.getBoundingClientRect().width * 0.8;
+  const boardWidth = boardEl.getBoundingClientRect().width * 0.7;
   btn.style.fontSize = `${Math.floor(boardWidth / boardSize)}px`;
 
   return btn;
@@ -103,7 +107,7 @@ function updateScore(key = "") {
     alert(msg);
     drawScoreHTML(key);
     resetTurnStats();
-  }, 800);
+  }, msgDelay);
 }
 
 function init() {
@@ -139,8 +143,8 @@ boardEl.addEventListener("click", (e) => {
   isEnded = isMatch || isFullfiled;
 
   if (isEnded && isMatch) {
-    updateScore(key);
     setWinnerPadsColor(axis);
+    updateScore(key);
   }
 
   if (isEnded && isFullfiled) updateScore("draw");

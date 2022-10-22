@@ -1,4 +1,4 @@
-const BOARD_SIZE = 5;
+const BOARD_SIZE = 7;
 
 function classNames(deps) {
   const classes = Object.entries(deps).map((item, i) => {
