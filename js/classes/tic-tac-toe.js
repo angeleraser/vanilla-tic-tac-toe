@@ -121,8 +121,11 @@ class TicTacToe {
     if (!this.state.isEnded) return false;
 
     isMatch && this.__decorateWinnerCells__(axis);
-    this.__updateScore__(cellValue);
-    this.__finalizeTurn__(cellValue);
+
+    const key = isMatch ? cellValue : "draw";
+
+    this.__updateScore__(key);
+    this.__finalizeTurn__(key);
 
     return true;
   }
@@ -134,8 +137,8 @@ class TicTacToe {
     this.state.gameBoard = createBoardTemplate(this.boardSize);
   }
 
-  __updateScore__(winnerCellKey = "") {
-    this.state.score[winnerCellKey] += 1;
+  __updateScore__(key = "") {
+    this.state.score[key] += 1;
   }
 
   __finalizeTurn__(winnerCellKey = "") {
