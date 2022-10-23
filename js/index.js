@@ -3,6 +3,8 @@ import {
   evalBoardAxies,
   createBoardTemplate,
   BOARD_SIZE,
+  TOTAL_CELLS,
+  ANIMATION_DURATION,
 } from "./utils.js";
 
 const boardEl = document.getElementById("board");
@@ -12,7 +14,7 @@ let gameBoard = [],
   isX = true,
   isEnded = false,
   movesCount = 0,
-  resetDelay = 2000;
+  resetDelay = 250;
 
 const score = {
   x: 0,
@@ -31,21 +33,31 @@ function setWinnerPadsColor(axis = []) {
     const btn = document.querySelector(
       `[data-rowid='${p[0]}'][data-colid='${p[1]}']`
     );
-
-    resetDelay += (i + 1) * 10;
-    btn.classList.add("board-pad-match");
+    btn.classList.add("board-cell-match");
     btn.style.transitionDelay = `${(i + 1) / 10}s`;
+  });
+}
+
+async function dispelBoardHTML() {
+  return document.querySelectorAll(".board-cell").forEach((btn, i) => {
+    btn.classList.remove("show-animation");
+    btn.classList.add("dispel-animation");
   });
 }
 
 function renderBoardHTML(size) {
   const buttons = createBoardTemplate(size).map((row, ri) => {
-    return row.map((_, ci) => createBoardPad(ri, ci, size));
+    return row.map((_, ci) => createBoardCell(ri, ci, size));
   });
+
   boardEl.innerHTML = "";
   boardEl.dataset.boardsize = size;
   boardEl.style.gridTemplateColumns = "1fr ".repeat(size);
-  buttons.flat(1).forEach((btn) => boardEl.appendChild(btn));
+
+  buttons.flat(1).forEach((btn, i) => {
+    btn.style.animationDelay = `${(i + 1) / 25}s`;
+    boardEl.appendChild(btn);
+  });
 }
 
 function setTurnIndicatorHTML() {
@@ -58,26 +70,27 @@ function setTurnIndicatorHTML() {
     .classList.remove("active");
 }
 
-function createBoardPad(rowId, colId, boardSize) {
+function createBoardCell(rowId, colId, boardSize) {
   const btn = document.createElement("button");
-  const isCorner = colId === 0 || colId === boardSize - 1;
 
   const classes = classNames({
-    "board-pad-bottom": rowId === boardSize - 1,
-    "board-pad-left": colId === 0,
-    "board-pad-right": colId === boardSize - 1,
-    "board-pad-top": rowId === 0,
-    "board-pad": isCorner,
+    "board-cell-bottom": rowId === boardSize - 1,
+    "board-cell-left": colId === 0,
+    "board-cell-right": colId === boardSize - 1,
+    "board-cell-top": rowId === 0,
+    "board-cell": colId === 0 || colId === boardSize - 1,
   });
+  const boardWidth = boardEl.getBoundingClientRect().width * 0.5;
 
-  btn.classList.add("board-pad");
+  btn.style.fontSize = `${Math.floor(boardWidth / boardSize)}px`;
+  btn.classList.add("board-cell");
+  btn.classList.add("show-animation");
   classes.length && btn.classList.add(...classes);
   btn.dataset.rowid = rowId;
   btn.dataset.colid = colId;
   btn.dataset.key = "";
-
-  const boardWidth = boardEl.getBoundingClientRect().width * 0.5;
-  btn.style.fontSize = `${Math.floor(boardWidth / boardSize)}px`;
+  btn.style.animationDuration = `${ANIMATION_DURATION}s`;
+  btn.style.transition = `${ANIMATION_DURATION}s background-color`;
 
   return btn;
 }
@@ -86,9 +99,9 @@ function resetTurnStats() {
   isEnded = false;
   isX = true;
   movesCount = 0;
+  resetDelay = 250;
   gameBoard = createBoardTemplate(BOARD_SIZE);
   setTurnIndicatorHTML();
-  renderBoardHTML(BOARD_SIZE);
 }
 
 function resetAllStats() {
@@ -97,15 +110,6 @@ function resetAllStats() {
   score.draws = 0;
   resetTurnStats();
   Object.keys(score).forEach(drawScoreHTML);
-}
-
-function updateScore(key) {
-  score[key] += 1;
-
-  setTimeout(() => {
-    drawScoreHTML(key);
-    resetTurnStats();
-  }, resetDelay);
 }
 
 function init() {
@@ -119,8 +123,10 @@ resetBtnEl.addEventListener("click", () => {
   init();
 });
 
-boardEl.addEventListener("click", ({ target: btn }) => {
-  if (isEnded) return e.preventDefault();
+boardEl.addEventListener("click", (e) => {
+  const { target: btn } = e;
+
+  if (btn.tagName !== "BUTTON" || isEnded) return;
 
   const { rowid, colid } = btn.dataset;
   const key = isX ? "x" : "o";
@@ -128,19 +134,34 @@ boardEl.addEventListener("click", ({ target: btn }) => {
   if (!btn.dataset.key) {
     btn.textContent = key;
     btn.dataset.key = key;
-    gameBoard[rowid][colid] = key;
+    gameBoard[Number(rowid)][Number(colid)] = key;
     isX = !isX;
     movesCount += 1;
     setTurnIndicatorHTML();
   }
 
   const { isMatch, axis } = evalBoardAxies(gameBoard, key);
-  const isFullfiled = movesCount === BOARD_SIZE * BOARD_SIZE;
 
-  isEnded = isMatch || isFullfiled;
+  isEnded = isMatch || movesCount === TOTAL_CELLS;
 
-  isEnded && updateScore(isMatch ? key : "draws");
-  isMatch && setWinnerPadsColor(axis);
+  if (!isEnded) return;
+
+  if (isMatch) setTimeout(() => setWinnerPadsColor(axis), resetDelay);
+
+  const accumDelay = ANIMATION_DURATION * TOTAL_CELLS;
+
+  resetDelay += (accumDelay / (BOARD_SIZE * 0.1)) * 80 + 500;
+  setTimeout(dispelBoardHTML, resetDelay);
+
+  resetDelay += accumDelay * 150;
+  setTimeout(() => {
+    const k = isMatch ? key : "draws";
+
+    score[k] += 1;
+    drawScoreHTML(k);
+    resetTurnStats();
+    renderBoardHTML(BOARD_SIZE);
+  }, resetDelay);
 });
 
 init();

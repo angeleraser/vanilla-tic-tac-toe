@@ -1,12 +1,14 @@
-const availableSizes = [3, 5, 7, 9, 15];
+const availableSizes = [3, 5, 7, 9];
 
 const welcomeMsg = `Please type one of the following board sizes: \n> ${availableSizes.join(
   "\n> "
 )}`;
 
 let BOARD_SIZE = Number(prompt(welcomeMsg)?.trim());
-
 if (!availableSizes.includes(BOARD_SIZE)) BOARD_SIZE = availableSizes[0];
+
+const TOTAL_CELLS = Math.pow(BOARD_SIZE, 2);
+const ANIMATION_DURATION = 0.3;
 
 function classNames(deps) {
   const classes = Object.entries(deps).map((item, i) => {
@@ -83,4 +85,11 @@ function evalBoardAxies(board = [], key = "") {
   return { isMatch, axis: wAxis };
 }
 
-export { classNames, createBoardTemplate, evalBoardAxies, BOARD_SIZE };
+export {
+  classNames,
+  createBoardTemplate,
+  evalBoardAxies,
+  BOARD_SIZE,
+  TOTAL_CELLS,
+  ANIMATION_DURATION,
+};

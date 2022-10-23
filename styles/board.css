@@ -2,12 +2,12 @@
   display: grid;
   height: 70%;
   margin: 0 auto;
-  margin: 48px 0;
+  margin: 24px 0;
   position: relative;
   width: 100%;
 }
 
-.board-pad,
+.board-cell,
 .reset-btn {
   font-weight: 700;
   outline: none;
@@ -15,49 +15,73 @@
   background-color: transparent;
   line-height: 0;
   font-family: "Noto Sans Vai", sans-serif;
-  transition: 0.3s background-color;
 }
 
-.board-pad {
+.board-cell {
   border: 2px solid var(--light-gray);
   height: 100%;
-  width: 100%;
-  text-transform: uppercase;
   padding: 0;
+  text-transform: uppercase;
+  width: 100%;
+  animation-fill-mode: forwards;
 }
 
-.board-pad-left {
+.board-cell.show-animation {
+  translate: 0 50%;
+  opacity: 0;
+  animation-name: show-animation;
+}
+
+.board-cell.dispel-animation {
+  animation-name: dispel-animation;
+}
+
+@keyframes dispel-animation {
+  to {
+    translate: 0 50%;
+    opacity: 0;
+  }
+}
+
+@keyframes show-animation {
+  to {
+    translate: 0;
+    opacity: 1;
+  }
+}
+
+.board-cell-left {
   border-left: none;
 }
 
-.board-pad-right {
+.board-cell-right {
   border-right: none;
 }
 
-.board-pad-top {
+.board-cell-top {
   border-top: none;
 }
 
-.board-pad-bottom {
+.board-cell-bottom {
   border-bottom: none;
 }
 
-.board-pad[data-key="x"],
+.board-cell[data-key="x"],
 .player-x {
   color: var(--blue);
 }
 
-.board-pad[data-key="x"].board-pad-match {
+.board-cell[data-key="x"].board-cell-match {
   background-color: var(--light-blue);
   border-color: var(--light-blue);
 }
 
-.board-pad[data-key="o"],
+.board-cell[data-key="o"],
 .player-o {
   color: var(--turquoise);
 }
 
-.board-pad[data-key="o"].board-pad-match {
+.board-cell[data-key="o"].board-cell-match {
   background-color: var(--light-turquoise-2);
   border-color: var(--light-turquoise-2);
 }
