@@ -66,22 +66,22 @@
   border-bottom: none;
 }
 
-.board-cell[data-key="x"],
+.board-cell[data-value="x"],
 .player-x {
   color: var(--blue);
 }
 
-.board-cell[data-key="x"].board-cell-match {
+.board-cell[data-value="x"].board-cell-match {
   background-color: var(--light-blue);
   border-color: var(--light-blue);
 }
 
-.board-cell[data-key="o"],
+.board-cell[data-value="o"],
 .player-o {
   color: var(--turquoise);
 }
 
-.board-cell[data-key="o"].board-cell-match {
+.board-cell[data-value="o"].board-cell-match {
   background-color: var(--light-turquoise-2);
   border-color: var(--light-turquoise-2);
 }

@@ -4,7 +4,7 @@ const welcomeMsg = `Please type one of the following board sizes: \n> ${availabl
   "\n> "
 )}`;
 
-let BOARD_SIZE = Number(prompt(welcomeMsg)?.trim());
+let BOARD_SIZE = 3;
 if (!availableSizes.includes(BOARD_SIZE)) BOARD_SIZE = availableSizes[0];
 
 const TOTAL_CELLS = Math.pow(BOARD_SIZE, 2);
