@@ -6,13 +6,13 @@ import {
 } from "./utils.js";
 
 const boardEl = document.getElementById("board");
-const resetBtn = document.getElementById("reset-btn");
+const resetBtnEl = document.getElementById("reset-btn");
 
 let gameBoard = [],
   isX = true,
   isEnded = false,
   movesCount = 0,
-  msgDelay = 800;
+  resetDelay = 2000;
 
 const score = {
   x: 0,
@@ -20,7 +20,7 @@ const score = {
   draws: 0,
 };
 
-function drawScoreHTML(key = "") {
+function drawScoreHTML(key) {
   const suffix = key !== "draws" ? " Wins" : "";
   const el = document.getElementById(`${key}-score`);
   el && (el.textContent = `${score[key]}${suffix}`);
@@ -32,19 +32,19 @@ function setWinnerPadsColor(axis = []) {
       `[data-rowid='${p[0]}'][data-colid='${p[1]}']`
     );
 
-    msgDelay += (i + 1) * 10;
+    resetDelay += (i + 1) * 10;
     btn.classList.add("board-pad-match");
     btn.style.transitionDelay = `${(i + 1) / 10}s`;
   });
 }
 
-function renderBoardHTML(size = 0) {
-  const buttons = createBoardTemplate(size).map((r, ri) =>
-    r.map((c, ci) => createBoardPad(ri, ci, size))
-  );
+function renderBoardHTML(size) {
+  const buttons = createBoardTemplate(size).map((row, ri) => {
+    return row.map((_, ci) => createBoardPad(ri, ci, size));
+  });
   boardEl.innerHTML = "";
   boardEl.dataset.boardsize = size;
-  boardEl.style.gridTemplateColumns = "1fr ".repeat(buttons.length);
+  boardEl.style.gridTemplateColumns = "1fr ".repeat(size);
   buttons.flat(1).forEach((btn) => boardEl.appendChild(btn));
 }
 
@@ -58,7 +58,7 @@ function setTurnIndicatorHTML() {
     .classList.remove("active");
 }
 
-function createBoardPad(rowId = 0, colId = 0, boardSize) {
+function createBoardPad(rowId, colId, boardSize) {
   const btn = document.createElement("button");
   const isCorner = colId === 0 || colId === boardSize - 1;
 
@@ -76,7 +76,7 @@ function createBoardPad(rowId = 0, colId = 0, boardSize) {
   btn.dataset.colid = colId;
   btn.dataset.key = "";
 
-  const boardWidth = boardEl.getBoundingClientRect().width * 0.7;
+  const boardWidth = boardEl.getBoundingClientRect().width * 0.5;
   btn.style.fontSize = `${Math.floor(boardWidth / boardSize)}px`;
 
   return btn;
@@ -99,15 +99,13 @@ function resetAllStats() {
   Object.keys(score).forEach(drawScoreHTML);
 }
 
-function updateScore(key = "") {
+function updateScore(key) {
   score[key] += 1;
-  const msg = key === "draw" ? "Is a draw!" : `${key.toUpperCase()} wins!`;
 
   setTimeout(() => {
-    alert(msg);
     drawScoreHTML(key);
     resetTurnStats();
-  }, msgDelay);
+  }, resetDelay);
 }
 
 function init() {
@@ -116,15 +114,14 @@ function init() {
   setTurnIndicatorHTML();
 }
 
-resetBtn.addEventListener("click", () => {
+resetBtnEl.addEventListener("click", () => {
   resetAllStats();
   init();
 });
 
-boardEl.addEventListener("click", (e) => {
+boardEl.addEventListener("click", ({ target: btn }) => {
   if (isEnded) return e.preventDefault();
 
-  const { target: btn } = e;
   const { rowid, colid } = btn.dataset;
   const key = isX ? "x" : "o";
 
@@ -142,12 +139,8 @@ boardEl.addEventListener("click", (e) => {
 
   isEnded = isMatch || isFullfiled;
 
-  if (isEnded && isMatch) {
-    setWinnerPadsColor(axis);
-    updateScore(key);
-  }
-
-  if (isEnded && isFullfiled) updateScore("draw");
+  isEnded && updateScore(isMatch ? key : "draws");
+  isMatch && setWinnerPadsColor(axis);
 });
 
 init();

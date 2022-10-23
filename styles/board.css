@@ -49,6 +49,7 @@
 
 .board-pad[data-key="x"].board-pad-match {
   background-color: var(--light-blue);
+  border-color: var(--light-blue);
 }
 
 .board-pad[data-key="o"],
@@ -58,6 +59,7 @@
 
 .board-pad[data-key="o"].board-pad-match {
   background-color: var(--light-turquoise-2);
+  border-color: var(--light-turquoise-2);
 }
 
 .player-draw {

@@ -1,4 +1,12 @@
-const BOARD_SIZE = 7;
+const availableSizes = [3, 5, 7, 9, 15];
+
+const welcomeMsg = `Please type one of the following board sizes: \n> ${availableSizes.join(
+  "\n> "
+)}`;
+
+let BOARD_SIZE = Number(prompt(welcomeMsg)?.trim());
+
+if (!availableSizes.includes(BOARD_SIZE)) BOARD_SIZE = availableSizes[0];
 
 function classNames(deps) {
   const classes = Object.entries(deps).map((item, i) => {
