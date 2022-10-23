@@ -52,12 +52,6 @@ class TicTacToe {
     this.__renderHTML__();
   }
 
-  __renderHTML__(scores = []) {
-    scores.forEach(this.__renderScoreHTML__.bind(this));
-    this.__renderBoardHTML__(this.boardSize);
-    this.__setTurnIndicatorHTML__();
-  }
-
   onBoardClick(callback = (e) => {}) {
     this.__boardEl__.addEventListener("click", (e) => {
       const { target: cell } = e;
@@ -104,7 +98,13 @@ class TicTacToe {
       },
     };
 
-    this.__renderHTML__(Object.keys(this.state.score));
+    this.__renderHTML__();
+  }
+
+  __renderHTML__() {
+    Object.keys(this.state.score).forEach(this.__renderScoreHTML__.bind(this));
+    this.__renderBoardHTML__(this.boardSize);
+    this.__setTurnIndicatorHTML__();
   }
 
   __addNewMove__(cellValue = "", coords = []) {
@@ -148,13 +148,8 @@ class TicTacToe {
     resetDelay += (accumDelay / (this.boardSize * 0.1)) * 80 + 500;
 
     this.__resetTurnState__();
-
     setTimeout(this.__showDispelBoardAnimation__.bind(this), resetDelay);
-
-    setTimeout(
-      () => this.__renderHTML__([winnerCellKey]),
-      (resetDelay += accumDelay * 150)
-    );
+    setTimeout(() => this.__renderHTML__(), (resetDelay += accumDelay * 150));
   }
 
   __renderBoardHTML__(size = 0) {
