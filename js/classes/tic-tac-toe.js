@@ -1,5 +1,3 @@
-import { classNames, evalBoardAxies } from "../utils.js";
-
 function createBoardTemplate(size = 0) {
   const board = [];
 
@@ -12,6 +10,67 @@ function createBoardTemplate(size = 0) {
   }
 
   return board;
+}
+
+function classNames(deps) {
+  const classes = Object.entries(deps).map((item, i) => {
+    const [key, value] = item;
+    if (!value || !key) return "";
+    return key;
+  });
+
+  return classes.length ? classes.filter((v) => v) : "";
+}
+
+function evalBoardAxies(board = [], key = "") {
+  function getZAxis(coords = [0, 0]) {
+    const arr = [];
+
+    for (let i = 0; i < board.length; i++) {
+      const ci = coords[1] - i;
+      arr.push([i, ci > 0 ? ci : Math.abs(ci)]);
+    }
+
+    return arr;
+  }
+
+  function evalAxis(axis, id) {
+    if (axis.length === 0) return false;
+
+    return axis.every((p) => {
+      const [r, c] = p;
+      return (id === "y" ? board[c][r] : board[r][c]) === key;
+    });
+  }
+
+  let r = 0,
+    size = board.length,
+    isMatch = false,
+    wAxis = [];
+
+  while (!isMatch && r < size) {
+    let xyAxis = [];
+
+    for (let c = 0; c < size; c++) {
+      xyAxis.push([r, c]);
+
+      const isCorner = (c === size - 1 || !c) && (!r || r === size - 1);
+      const zAxis = getZAxis([r, c]);
+
+      if (isCorner && evalAxis(zAxis, "z")) {
+        return { axis: zAxis, isMatch: true };
+      }
+    }
+
+    isMatch =
+      evalAxis(xyAxis, "x") ||
+      (evalAxis(xyAxis, "y") && (xyAxis = xyAxis.map((c) => c.reverse())));
+
+    wAxis = xyAxis;
+    r++;
+  }
+
+  return { isMatch, axis: wAxis };
 }
 
 const PLAYERS = { X: "x", O: "o" };
@@ -141,7 +200,7 @@ class TicTacToe {
     this.state.score[key] += 1;
   }
 
-  __finalizeTurn__(winnerCellKey = "") {
+  __finalizeTurn__() {
     let resetDelay = 250,
       accumDelay = this.animationDuration * this.totalCells;
 
@@ -288,6 +347,19 @@ class TicTacToe {
     const { rowid, colid } = cellEl.dataset;
 
     return [Number(rowid), Number(colid)];
+  }
+
+  static promptBoardSize() {
+    const availableSizes = [3, 5, 7, 9];
+
+    const welcomeMsg = `Please type one of the following board sizes: \n> ${availableSizes.join(
+      "\n> "
+    )}`;
+    let size = 3;
+
+    if (!availableSizes.includes(size)) size = availableSizes[0];
+
+    return size;
   }
 }
 
