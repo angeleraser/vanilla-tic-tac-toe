@@ -77,18 +77,24 @@ const PLAYERS = { X: "x", O: "o" };
 
 class TicTacToe {
   constructor(
-    options = { boardSize: 0, animationDuration: 0, renderRoot: null }
+    options = {
+      boardSize: 0,
+      animationDuration: 0,
+      renderRoot: null,
+      roomid: "",
+    }
   ) {
     this.boardSize = options.boardSize;
     this.totalCells = Math.pow(options.boardSize, 2);
     this.animationDuration = options.animationDuration;
+    this.roomid = options.roomid;
 
     this.renderRoot = options.renderRoot;
-    this.__boardEl__ = this.__createHTMLWrapper__(["board-container"]);
-    this.__scoreEl__ = this.__createScoreHTML__();
-    this.__actionsEl__ = this.__createActionsHTML__();
+    this.boardEl = this.createHTMLWrapper(["board-container"]);
+    this.scoreEl = this.createScoreHTML();
+    this.actionsEl = this.createActionsHTML();
 
-    this.__PLAYERS__ = PLAYERS;
+    this.PLAYERS = PLAYERS;
 
     this.state = {
       gameBoard: createBoardTemplate(options.boardSize),
@@ -104,34 +110,34 @@ class TicTacToe {
   }
 
   render() {
-    this.renderRoot.appendChild(this.__scoreEl__);
-    this.renderRoot.appendChild(this.__boardEl__);
-    this.renderRoot.appendChild(this.__actionsEl__);
+    this.renderRoot.appendChild(this.scoreEl);
+    this.renderRoot.appendChild(this.boardEl);
+    this.renderRoot.appendChild(this.actionsEl);
 
-    this.__renderHTML__();
+    this.renderHTML();
   }
 
   onBoardClick(callback = (e) => {}) {
-    this.__boardEl__.addEventListener("click", (e) => {
+    this.boardEl.addEventListener("click", (e) => {
       const { target: cell } = e;
 
       if (cell.tagName !== "BUTTON" || this.state.isEnded || cell.dataset.value)
         return;
 
       void callback({
-        coords: this.__getCellCoords__(cell),
+        coords: this.getCellCoords(cell),
         cellValue: this.state.isX ? PLAYERS.X : PLAYERS.O,
       });
     });
   }
 
   onResetBtnClick(callback = (e) => {}) {
-    const resetBtn = this.__actionsEl__.querySelector('[data-id="reset-btn"]');
+    const resetBtn = this.actionsEl.querySelector('[data-id="reset-btn"]');
     resetBtn.addEventListener("click", ({ target }) => callback(target));
   }
 
   writeBoardCell(value = "", coords = []) {
-    const cellEl = this.__boardEl__.querySelector(
+    const cellEl = this.boardEl.querySelector(
       `[data-rowid="${coords[0]}"][data-colid="${coords[1]}"]`
     );
 
@@ -140,12 +146,12 @@ class TicTacToe {
     cellEl.textContent = value;
     cellEl.dataset.value = value;
 
-    this.__addNewMove__(value, coords);
-    return this.__checkForAxiesMatch__(value);
+    this.addNewMove(value, coords);
+    return this.checkForAxiesMatch(value);
   }
 
   resetAllStats() {
-    this.state = {
+    this.setState({
       gameBoard: createBoardTemplate(this.boardSize),
       isX: true,
       isEnded: false,
@@ -155,78 +161,82 @@ class TicTacToe {
         o: 0,
         draw: 0,
       },
-    };
+    });
 
-    this.__renderHTML__();
+    this.renderHTML();
   }
 
-  __renderHTML__() {
-    Object.keys(this.state.score).forEach(this.__renderScoreHTML__.bind(this));
-    this.__renderBoardHTML__(this.boardSize);
-    this.__setTurnIndicatorHTML__();
+  setState(data = {}) {
+    this.state = data;
   }
 
-  __addNewMove__(cellValue = "", coords = []) {
+  renderHTML() {
+    Object.keys(this.state.score).forEach(this.renderScoreHTML.bind(this));
+    this.renderBoardHTML(this.boardSize);
+    this.setTurnIndicatorHTML();
+  }
+
+  addNewMove(cellValue = "", coords = []) {
     this.state.gameBoard[coords[0]][coords[1]] = cellValue;
     this.state.isX = !this.state.isX;
     this.state.movesCount += 1;
-    this.__setTurnIndicatorHTML__();
+    this.setTurnIndicatorHTML();
   }
 
-  __checkForAxiesMatch__(cellValue = "") {
+  checkForAxiesMatch(cellValue = "") {
     const { isMatch, axis } = evalBoardAxies(this.state.gameBoard, cellValue);
     this.state.isEnded = isMatch || this.state.movesCount === this.totalCells;
 
     if (!this.state.isEnded) return false;
 
-    isMatch && this.__decorateWinnerCells__(axis);
+    isMatch && this.decorateWinnerCells(axis);
 
     const key = isMatch ? cellValue : "draw";
 
-    this.__updateScore__(key);
-    this.__finalizeTurn__(key);
+    this.updateScore(key);
+    this.finalizeTurn(key);
 
     return true;
   }
 
-  __resetTurnState__() {
+  resetTurnState() {
     this.state.isEnded = false;
     this.state.isX = true;
     this.state.movesCount = 0;
     this.state.gameBoard = createBoardTemplate(this.boardSize);
   }
 
-  __updateScore__(key = "") {
+  updateScore(key = "") {
     this.state.score[key] += 1;
   }
 
-  __finalizeTurn__() {
+  finalizeTurn() {
     let resetDelay = 250,
       accumDelay = this.animationDuration * this.totalCells;
 
     resetDelay += (accumDelay / (this.boardSize * 0.1)) * 80 + 500;
 
-    this.__resetTurnState__();
-    setTimeout(this.__showDispelBoardAnimation__.bind(this), resetDelay);
-    setTimeout(() => this.__renderHTML__(), (resetDelay += accumDelay * 150));
+    this.resetTurnState();
+    setTimeout(this.showDispelBoardAnimation.bind(this), resetDelay);
+    setTimeout(() => this.renderHTML(), (resetDelay += accumDelay * 150));
   }
 
-  __renderBoardHTML__(size = 0) {
+  renderBoardHTML(size = 0) {
     const buttons = createBoardTemplate(size).map((row, ri) => {
-      return row.map((_, ci) => this.__createBoardCellHTML__(ri, ci, size));
+      return row.map((_, ci) => this.createBoardCellHTML(ri, ci, size));
     });
 
-    this.__boardEl__.innerHTML = "";
-    this.__boardEl__.dataset.boardsize = size;
-    this.__boardEl__.style.gridTemplateColumns = "1fr ".repeat(size);
+    this.boardEl.innerHTML = "";
+    this.boardEl.dataset.boardsize = size;
+    this.boardEl.style.gridTemplateColumns = "1fr ".repeat(size);
 
     buttons.flat(1).forEach((btn, i) => {
       btn.style.animationDelay = `${(i + 1) / 25}s`;
-      this.__boardEl__.appendChild(btn);
+      this.boardEl.appendChild(btn);
     });
   }
 
-  __createHTMLWrapper__(classes = [], datasets = []) {
+  createHTMLWrapper(classes = [], datasets = []) {
     const container = document.createElement("div");
     container.classList.add(...classes);
     datasets.forEach((ds) => (container.dataset[ds.key] = ds.value));
@@ -234,14 +244,14 @@ class TicTacToe {
     return container;
   }
 
-  __createScoreHTML__() {
-    const div = this.__createHTMLWrapper__(["score-container"]);
+  createScoreHTML() {
+    const div = this.createHTMLWrapper(["score-container"]);
     const players = [PLAYERS.X, "draw", PLAYERS.O];
 
     players.forEach((p) => {
-      const pContainer = this.__createHTMLWrapper__(["player", `player-${p}`]);
-      const pKey = this.__createHTMLWrapper__(["player-key"]);
-      const pScore = this.__createHTMLWrapper__(
+      const pContainer = this.createHTMLWrapper(["player", `player-${p}`]);
+      const pKey = this.createHTMLWrapper(["player-key"]);
+      const pScore = this.createHTMLWrapper(
         ["player-score"],
         [{ key: "id", value: p }]
       );
@@ -256,8 +266,8 @@ class TicTacToe {
     return div;
   }
 
-  __createActionsHTML__() {
-    const container = this.__createHTMLWrapper__(["board-actions-container"]);
+  createActionsHTML() {
+    const container = this.createHTMLWrapper(["board-actions-container"]);
     const resetBtn = document.createElement("button");
 
     resetBtn.dataset.id = "reset-btn";
@@ -266,9 +276,7 @@ class TicTacToe {
 
     container.appendChild(resetBtn);
 
-    const turnIndicator = this.__createHTMLWrapper__([
-      "turn-indicator-container",
-    ]);
+    const turnIndicator = this.createHTMLWrapper(["turn-indicator-container"]);
     turnIndicator.innerHTML += `
       Current turn:
           <div class="turn-indicator">
@@ -283,7 +291,7 @@ class TicTacToe {
     return container;
   }
 
-  __createBoardCellHTML__(rowId = 0, colId = 0, boardSize = 0) {
+  createBoardCellHTML(rowId = 0, colId = 0, boardSize = 0) {
     const btn = document.createElement("button");
 
     const classes = classNames({
@@ -293,7 +301,7 @@ class TicTacToe {
       "board-cell-top": rowId === 0,
       "board-cell": colId === 0 || colId === boardSize - 1,
     });
-    const boardWidth = this.__boardEl__.getBoundingClientRect().width * 0.5;
+    const boardWidth = this.boardEl.getBoundingClientRect().width * 0.5;
 
     btn.style.fontSize = `${Math.floor(boardWidth / boardSize)}px`;
     btn.classList.add("board-cell");
@@ -301,25 +309,24 @@ class TicTacToe {
     classes.length && btn.classList.add(...classes);
     btn.dataset.rowid = rowId;
     btn.dataset.colid = colId;
-    btn.dataset.value = "";
+    btn.dataset.value = this.state.gameBoard[rowId][colId] || "";
+    btn.textContent = this.state.gameBoard[rowId][colId] || "";
     btn.style.animationDuration = `${this.animationDuration}s`;
     btn.style.transition = `${this.animationDuration}s background-color`;
 
     return btn;
   }
 
-  __showDispelBoardAnimation__() {
-    return this.__boardEl__
-      .querySelectorAll(".board-cell")
-      .forEach((btn, i) => {
-        btn.classList.remove("show-animation");
-        btn.classList.add("dispel-animation");
-      });
+  showDispelBoardAnimation() {
+    return this.boardEl.querySelectorAll(".board-cell").forEach((btn, i) => {
+      btn.classList.remove("show-animation");
+      btn.classList.add("dispel-animation");
+    });
   }
 
-  __decorateWinnerCells__(axis = []) {
+  decorateWinnerCells(axis = []) {
     axis.forEach((p, i) => {
-      const btn = this.__boardEl__.querySelector(
+      const btn = this.boardEl.querySelector(
         `[data-rowid='${p[0]}'][data-colid='${p[1]}']`
       );
       btn.classList.add("board-cell-match");
@@ -327,23 +334,23 @@ class TicTacToe {
     });
   }
 
-  __renderScoreHTML__(winnerCellKey = "") {
+  renderScoreHTML(winnerCellKey = "") {
     const suffix = winnerCellKey !== "draw" ? " Wins" : "";
-    const el = this.__scoreEl__.querySelector(`[data-id="${winnerCellKey}"]`);
+    const el = this.scoreEl.querySelector(`[data-id="${winnerCellKey}"]`);
     el && (el.textContent = `${this.state.score[winnerCellKey]}${suffix}`);
   }
 
-  __setTurnIndicatorHTML__() {
-    this.__actionsEl__
+  setTurnIndicatorHTML() {
+    this.actionsEl
       .querySelector(`.player-${this.state.isX ? "x" : "o"}-indicator`)
       .classList.add("active");
 
-    this.__actionsEl__
+    this.actionsEl
       .querySelector(`.player-${!this.state.isX ? "x" : "o"}-indicator`)
       .classList.remove("active");
   }
 
-  __getCellCoords__(cellEl) {
+  getCellCoords(cellEl) {
     const { rowid, colid } = cellEl.dataset;
 
     return [Number(rowid), Number(colid)];
