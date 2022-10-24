@@ -14,12 +14,13 @@ class OnlineTicTacToe extends TicTacToe {
   constructor(options) {
     super(options);
     this.socket = io("http://localhost:3000/");
-    this.allowBoardWriting = false;
     this.id = this.socket.id;
     this.isRemoteOnline = false;
   }
 
   init() {
+    this.allowBoardWriting = false;
+
     this.render();
 
     this.onBoardClick(({ cellValue, coords }) => {
@@ -92,6 +93,9 @@ class OnlineTicTacToe extends TicTacToe {
     });
   }
 
+  /**
+   * @private
+   */
   getEventPayload(payload = {}) {
     return {
       roomid: this.roomid,
@@ -99,10 +103,16 @@ class OnlineTicTacToe extends TicTacToe {
     };
   }
 
+  /**
+   * @private
+   */
   getNextPlayerKey() {
     return this.state.isX ? this.PLAYERS.X : this.PLAYERS.O;
   }
 
+  /**
+   * @private
+   */
   getCurrentPlayer() {
     return localStorage.getItem("CURRENT_PLAYER");
   }

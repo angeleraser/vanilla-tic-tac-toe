@@ -84,16 +84,17 @@ class TicTacToe {
       roomid: "",
     }
   ) {
-    this.boardSize = options.boardSize;
-    this.totalCells = Math.pow(options.boardSize, 2);
+    this.allowBoardWriting = true;
     this.animationDuration = options.animationDuration;
+    this.boardSize = options.boardSize;
+    this.playersCount = options.players || 1;
     this.roomid = options.roomid;
+    this.totalCells = Math.pow(options.boardSize, 2);
 
-    this.renderRoot = options.renderRoot;
-    this.boardEl = this.createHTMLWrapper(["board-container"]);
-    this.scoreEl = this.createScoreHTML();
     this.actionsEl = this.createActionsHTML();
-
+    this.boardEl = this.createHTMLWrapper(["board-container"]);
+    this.renderRoot = options.renderRoot;
+    this.scoreEl = this.createScoreHTML();
     this.PLAYERS = PLAYERS;
 
     this.state = {
@@ -109,6 +110,16 @@ class TicTacToe {
     };
   }
 
+  /**
+   * @public
+   */
+  init() {
+    throw new Error("Method not implemented.");
+  }
+
+  /**
+   * @public
+   */
   render() {
     this.renderRoot.appendChild(this.scoreEl);
     this.renderRoot.appendChild(this.boardEl);
@@ -117,6 +128,9 @@ class TicTacToe {
     this.renderHTML();
   }
 
+  /**
+   * @public
+   */
   onBoardClick(callback = (e) => {}) {
     this.boardEl.addEventListener("click", (e) => {
       const { target: cell } = e;
@@ -131,11 +145,17 @@ class TicTacToe {
     });
   }
 
+  /**
+   * @public
+   */
   onResetBtnClick(callback = (e) => {}) {
     const resetBtn = this.actionsEl.querySelector('[data-id="reset-btn"]');
     resetBtn.addEventListener("click", ({ target }) => callback(target));
   }
 
+  /**
+   * @public
+   */
   writeBoardCell(value = "", coords = []) {
     const cellEl = this.boardEl.querySelector(
       `[data-rowid="${coords[0]}"][data-colid="${coords[1]}"]`
@@ -150,6 +170,9 @@ class TicTacToe {
     return this.checkForAxiesMatch(value);
   }
 
+  /**
+   * @public
+   */
   resetAllStats() {
     this.setState({
       gameBoard: createBoardTemplate(this.boardSize),
@@ -166,16 +189,25 @@ class TicTacToe {
     this.renderHTML();
   }
 
+  /**
+   * @public
+   */
   setState(data = {}) {
     this.state = data;
   }
 
+  /**
+   * @public
+   */
   renderHTML() {
     Object.keys(this.state.score).forEach(this.renderScoreHTML.bind(this));
     this.renderBoardHTML(this.boardSize);
     this.setTurnIndicatorHTML();
   }
 
+  /**
+   * @private
+   */
   addNewMove(cellValue = "", coords = []) {
     this.state.gameBoard[coords[0]][coords[1]] = cellValue;
     this.state.isX = !this.state.isX;
@@ -183,6 +215,9 @@ class TicTacToe {
     this.setTurnIndicatorHTML();
   }
 
+  /**
+   * @private
+   */
   checkForAxiesMatch(cellValue = "") {
     const { isMatch, axis } = evalBoardAxies(this.state.gameBoard, cellValue);
     this.state.isEnded = isMatch || this.state.movesCount === this.totalCells;
@@ -192,13 +227,15 @@ class TicTacToe {
     isMatch && this.decorateWinnerCells(axis);
 
     const key = isMatch ? cellValue : "draw";
-
     this.updateScore(key);
     this.finalizeTurn(key);
 
     return true;
   }
 
+  /**
+   * @private
+   */
   resetTurnState() {
     this.state.isEnded = false;
     this.state.isX = true;
@@ -206,10 +243,16 @@ class TicTacToe {
     this.state.gameBoard = createBoardTemplate(this.boardSize);
   }
 
+  /**
+   * @private
+   */
   updateScore(key = "") {
     this.state.score[key] += 1;
   }
 
+  /**
+   * @private
+   */
   finalizeTurn() {
     let resetDelay = 250,
       accumDelay = this.animationDuration * this.totalCells;
@@ -221,6 +264,9 @@ class TicTacToe {
     setTimeout(() => this.renderHTML(), (resetDelay += accumDelay * 150));
   }
 
+  /**
+   * @private
+   */
   renderBoardHTML(size = 0) {
     const buttons = createBoardTemplate(size).map((row, ri) => {
       return row.map((_, ci) => this.createBoardCellHTML(ri, ci, size));
@@ -236,6 +282,9 @@ class TicTacToe {
     });
   }
 
+  /**
+   * @private
+   */
   createHTMLWrapper(classes = [], datasets = []) {
     const container = document.createElement("div");
     container.classList.add(...classes);
@@ -244,6 +293,9 @@ class TicTacToe {
     return container;
   }
 
+  /**
+   * @private
+   */
   createScoreHTML() {
     const div = this.createHTMLWrapper(["score-container"]);
     const players = [PLAYERS.X, "draw", PLAYERS.O];
@@ -266,6 +318,9 @@ class TicTacToe {
     return div;
   }
 
+  /**
+   * @private
+   */
   createActionsHTML() {
     const container = this.createHTMLWrapper(["board-actions-container"]);
     const resetBtn = document.createElement("button");
@@ -291,6 +346,9 @@ class TicTacToe {
     return container;
   }
 
+  /**
+   * @private
+   */
   createBoardCellHTML(rowId = 0, colId = 0, boardSize = 0) {
     const btn = document.createElement("button");
 
@@ -317,6 +375,9 @@ class TicTacToe {
     return btn;
   }
 
+  /**
+   * @private
+   */
   showDispelBoardAnimation() {
     return this.boardEl.querySelectorAll(".board-cell").forEach((btn, i) => {
       btn.classList.remove("show-animation");
@@ -324,6 +385,9 @@ class TicTacToe {
     });
   }
 
+  /**
+   * @private
+   */
   decorateWinnerCells(axis = []) {
     axis.forEach((p, i) => {
       const btn = this.boardEl.querySelector(
@@ -334,12 +398,18 @@ class TicTacToe {
     });
   }
 
+  /**
+   * @private
+   */
   renderScoreHTML(winnerCellKey = "") {
     const suffix = winnerCellKey !== "draw" ? " Wins" : "";
     const el = this.scoreEl.querySelector(`[data-id="${winnerCellKey}"]`);
     el && (el.textContent = `${this.state.score[winnerCellKey]}${suffix}`);
   }
 
+  /**
+   * @private
+   */
   setTurnIndicatorHTML() {
     this.actionsEl
       .querySelector(`.player-${this.state.isX ? "x" : "o"}-indicator`)
@@ -350,23 +420,13 @@ class TicTacToe {
       .classList.remove("active");
   }
 
+  /**
+   * @private
+   */
   getCellCoords(cellEl) {
     const { rowid, colid } = cellEl.dataset;
 
     return [Number(rowid), Number(colid)];
-  }
-
-  static promptBoardSize() {
-    const availableSizes = [3, 5, 7, 9];
-
-    const welcomeMsg = `Please type one of the following board sizes: \n> ${availableSizes.join(
-      "\n> "
-    )}`;
-    let size = 3;
-
-    if (!availableSizes.includes(size)) size = availableSizes[0];
-
-    return size;
   }
 }
 

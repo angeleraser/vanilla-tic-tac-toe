@@ -1,25 +1,26 @@
 import { TicTacToe } from "./tic-tac-toe.js";
 
 class OfflineTicTacToe extends TicTacToe {
-  constructor(options = { players: 1 }) {
+  constructor(options) {
     super(options);
-    this.preventPlayerClick = false;
-    this.playersCount = options.players || 1;
   }
 
   init() {
     this.render();
 
     this.onBoardClick(({ cellValue, coords }) => {
-      const disableCPU =
-        !this.preventPlayerClick && this.writeBoardCell(cellValue, coords);
+      const enableCPU =
+        this.allowBoardWriting && !this.writeBoardCell(cellValue, coords);
 
-      if (!disableCPU && this.playersCount === 1) this.writeCPUCell();
+      if (enableCPU && this.playersCount === 1) this.writeCPUCell();
     });
 
     this.onResetBtnClick(this.resetAllStats.bind(this));
   }
 
+  /**
+   * @private
+   */
   getRandomCell() {
     const cells = Array.from(
       this.boardEl.querySelectorAll(".board-cell")
@@ -29,15 +30,18 @@ class OfflineTicTacToe extends TicTacToe {
     return cells[randomIndex];
   }
 
+  /**
+   * @private
+   */
   writeCPUCell() {
-    this.preventPlayerClick = true;
+    this.allowBoardWriting = false;
 
     setTimeout(() => {
       const value = this.state.isX ? this.PLAYERS.X : this.PLAYERS.O;
       const coords = this.getCellCoords(this.getRandomCell());
 
       this.writeBoardCell(value, coords);
-      this.preventPlayerClick = false;
+      this.allowBoardWriting = true;
     }, 1000);
   }
 }
