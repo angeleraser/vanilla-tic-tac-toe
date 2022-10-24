@@ -1,6 +1,6 @@
 .board-container {
   display: grid;
-  height: 70%;
+  height: 80%;
   margin: 0 auto;
   margin: 24px 0;
   position: relative;
@@ -163,10 +163,4 @@
 
 .player-o-indicator.active {
   background-color: var(--turquoise);
-}
-
-@media (min-width: 1024px) {
-  .board-container {
-    max-height: 720px;
-  }
 }
