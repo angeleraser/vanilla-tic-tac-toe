@@ -35,6 +35,11 @@ const baseClientConfig = {
   roomid: "tic-tac-toe",
 };
 
+const handleShowMainScreen = () => {
+  roomNameInput.value = "";
+  mainScreenEl.show();
+};
+
 const handleInitLocalClient = (players = 1) => {
   const client = new OfflineTicTacToe({
     ...baseClientConfig,
@@ -43,7 +48,7 @@ const handleInitLocalClient = (players = 1) => {
 
   mainScreenEl.hide();
   client.init();
-  client.onQuit(() => mainScreenEl.show());
+  client.onQuit(handleShowMainScreen);
 };
 
 onePlayerCpuBtn.addEventListener("click", () => handleInitLocalClient(1));
@@ -72,8 +77,8 @@ roomNameForm.addEventListener("submit", (e) => {
   });
 
   roomJoinScreenEl.hide();
-  client.init();
+  client.init(handleShowMainScreen);
 
-  client.onQuit(() => mainScreenEl.show());
-  client.onDisconnect(() => mainScreenEl.show());
+  client.onQuit(handleShowMainScreen);
+  client.onDisconnect(handleShowMainScreen);
 });

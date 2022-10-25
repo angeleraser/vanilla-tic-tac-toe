@@ -10,7 +10,7 @@
 }
 
 .main-screen-title {
-  font-size: clamp(12px, 12vw, 160px);
+  font-size: clamp(60px, 12vw, 160px);
 }
 
 .main-screen-title span {

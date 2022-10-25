@@ -1,6 +1,7 @@
 import { TicTacToe } from "./tic-tac-toe.js";
 
-const SERVER_URL = "https://tic-tac-toe-angel.herokuapp.com/";
+const PROD_SERVER_URL = "https://tic-tac-toe-angel.herokuapp.com/";
+const DEV_SERVER_URL = "http://localhost:3000";
 
 const EVENTS = {
   BOARD_CLICK: "board-click",
@@ -12,23 +13,31 @@ const EVENTS = {
   RECOVER_STATE: "recover-state",
   RESET: "reset",
   QUIT: "quit",
+  MATCH_READY: "match-ready",
 };
 
 class OnlineTicTacToe extends TicTacToe {
   constructor(options) {
     super(options);
-    this.socket = io ? io(SERVER_URL) : null;
-    this.id = this.socket.id;
-    this.isDestroyed = false;
+
+    try {
+      this.socket = io(DEV_SERVER_URL);
+    } catch {
+      this.socket = null;
+    }
   }
 
-  init() {
-    if (this.socket === null) return;
-
+  init(onUnableToConnect = () => {}) {
     this.allowBoardWriting = false;
     this.render();
 
-    this.socket.on("connect", () => {
+    this.showOverlay("Connecting to server...");
+
+    this.socket?.on("connect", () => {
+      this.hideOverlay();
+      this.showOverlay("Waiting for the other party...");
+      console.log(`Connected to room: ${this.roomid}.`);
+
       this.onBoardClick(({ cellValue, coords }) => {
         if (!this.allowBoardWriting) return;
 
@@ -62,6 +71,12 @@ class OnlineTicTacToe extends TicTacToe {
         this.allowBoardWriting = true;
 
         console.log(`Player ${socketId} joined the room.`);
+        this.hideOverlay();
+
+        this.socket.emit(
+          EVENTS.MATCH_READY,
+          this.getEventPayload({ state: this.state })
+        );
 
         this.socket.emit(
           EVENTS.RECOVER_STATE,
@@ -74,12 +89,32 @@ class OnlineTicTacToe extends TicTacToe {
         this.renderHTML(payload);
       });
 
-      this.socket.on(EVENTS.UNABLE_JOIN, () => {
-        alert("Unable to join room: " + this.roomid);
+      this.socket.on(EVENTS.UNABLE_JOIN, ({ roomid }) => {
+        this.showMessage(
+          `Unable to join room: ${roomid}. \nRoom is already full.`
+        );
+
+        this.socket.disconnect();
+
+        console.error(
+          `Unable to join room: ${this.roomid}. Room is already full.`
+        );
       });
 
       this.socket.on(EVENTS.RESET, () => this.resetAllStats());
+
+      this.socket.on(EVENTS.MATCH_READY, () => this.hideOverlay());
     });
+
+    setTimeout(() => {
+      if (!this.socket?.connected && !this.isDestroyed) {
+        this.showMessage("Unable to connect server, please try again.");
+        this.destroy();
+        this.hideOverlay();
+        this.socket?.disconnect();
+        onUnableToConnect();
+      }
+    }, 10000);
   }
 
   onDisconnect(callback) {
@@ -87,7 +122,7 @@ class OnlineTicTacToe extends TicTacToe {
 
     this.socket.on("disconnect", () => {
       this.allowBoardWriting = false;
-      !this.isDestroyed && this.destroy();
+      this.destroy();
       callback && callback();
       console.warn("You has been disconnected from server.");
     });
@@ -106,12 +141,10 @@ class OnlineTicTacToe extends TicTacToe {
 
   onQuit(callback) {
     super.onQuit(() => {
-      if (!this.socket) return;
-
       this.isDestroyed = true;
 
-      this.socket.emit(EVENTS.QUIT, this.getEventPayload());
-      this.socket.disconnect();
+      this.socket?.emit(EVENTS.QUIT, this.getEventPayload());
+      this.socket?.disconnect();
 
       callback && callback();
     });

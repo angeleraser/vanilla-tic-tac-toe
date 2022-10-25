@@ -164,3 +164,18 @@
 .player-o-indicator.active {
   background-color: var(--turquoise);
 }
+
+.board-loading-overlay {
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.85);
+  color: white;
+  display: flex;
+  height: 100vh;
+  justify-content: center;
+  position: fixed;
+  width: 100vw;
+  z-index: 999;
+  font-size: clamp(10px, 8vw, 40px);
+  padding: 40px;
+  text-align: center;
+}

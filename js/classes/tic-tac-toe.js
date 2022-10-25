@@ -93,9 +93,11 @@ class TicTacToe {
 
     this.actionsEl = this.createActionsHTML();
     this.boardEl = this.createHTMLWrapper(["board-container"]);
+    this.loadingOverlayEl = this.createHTMLWrapper(["board-loading-overlay"]);
     this.renderRoot = options.renderRoot;
     this.scoreEl = this.createScoreHTML();
     this.PLAYERS = PLAYERS;
+    this.isDestroyed = false;
 
     this.state = {
       gameBoard: createBoardTemplate(options.boardSize),
@@ -132,10 +134,13 @@ class TicTacToe {
    * @public
    */
   destroy() {
+    if (this.isDestroyed) return;
+
     this.renderRoot.removeChild(this.scoreEl);
     this.renderRoot.removeChild(this.boardEl);
     this.renderRoot.removeChild(this.actionsEl);
     this.resetAllStats();
+    this.isDestroyed = true;
   }
 
   /**
@@ -225,6 +230,16 @@ class TicTacToe {
     Object.keys(this.state.score).forEach(this.renderScoreHTML.bind(this));
     this.renderBoardHTML(this.boardSize);
     this.setTurnIndicatorHTML();
+  }
+
+  showOverlay(msg = "") {
+    this.loadingOverlayEl.textContent = msg;
+    this.renderRoot.appendChild(this.loadingOverlayEl);
+  }
+
+  hideOverlay() {
+    this.loadingOverlayEl.textContent = "";
+    this.renderRoot.removeChild(this.loadingOverlayEl);
   }
 
   /**
