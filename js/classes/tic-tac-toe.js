@@ -405,9 +405,12 @@ class TicTacToe {
       "board-cell": colId === 0 || colId === boardSize - 1,
     });
 
-    const boardHeight = this.boardEl.getBoundingClientRect().height * 0.25;
+    const boardHeight =
+      (this.boardEl.getBoundingClientRect().height / this.boardSize) * 0.35;
+    const boardWidth =
+      (this.boardEl.getBoundingClientRect().width / this.boardSize) * 0.25;
 
-    btn.style.fontSize = `${Math.floor(boardHeight)}px`;
+    btn.style.fontSize = `${Math.floor(boardHeight + boardWidth)}px`;
     btn.classList.add("board-cell");
     btn.classList.add("show-animation");
     classes.length && btn.classList.add(...classes);
@@ -425,7 +428,7 @@ class TicTacToe {
    * @private
    */
   showDispelBoardAnimation() {
-    return this.boardEl.querySelectorAll(".board-cell").forEach((btn, i) => {
+    return this.boardEl.querySelectorAll(".board-cell").forEach((btn) => {
       btn.classList.remove("show-animation");
       btn.classList.add("dispel-animation");
     });
