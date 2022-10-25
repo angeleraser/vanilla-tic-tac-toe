@@ -404,9 +404,10 @@ class TicTacToe {
       "board-cell-top": rowId === 0,
       "board-cell": colId === 0 || colId === boardSize - 1,
     });
-    const boardWidth = this.boardEl.getBoundingClientRect().width * 0.4;
 
-    btn.style.fontSize = `${Math.floor(boardWidth / boardSize)}px`;
+    const boardHeight = this.boardEl.getBoundingClientRect().height * 0.25;
+
+    btn.style.fontSize = `${Math.floor(boardHeight)}px`;
     btn.classList.add("board-cell");
     btn.classList.add("show-animation");
     classes.length && btn.classList.add(...classes);

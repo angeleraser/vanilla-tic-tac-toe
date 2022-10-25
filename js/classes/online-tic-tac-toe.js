@@ -31,7 +31,7 @@ class OnlineTicTacToe extends TicTacToe {
     this.allowBoardWriting = false;
     this.render();
 
-    this.showOverlay("Connecting to server...");
+    this.showOverlay("Joining to room...");
 
     this.socket?.on("connect", () => {
       this.hideOverlay();
