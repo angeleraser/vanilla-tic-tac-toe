@@ -131,6 +131,16 @@ class TicTacToe {
   /**
    * @public
    */
+  destroy() {
+    this.renderRoot.removeChild(this.scoreEl);
+    this.renderRoot.removeChild(this.boardEl);
+    this.renderRoot.removeChild(this.actionsEl);
+    this.resetAllStats();
+  }
+
+  /**
+   * @public
+   */
   onBoardClick(callback = (e) => {}) {
     this.boardEl.addEventListener("click", (e) => {
       const { target: cell } = e;
@@ -148,9 +158,21 @@ class TicTacToe {
   /**
    * @public
    */
-  onResetBtnClick(callback = (e) => {}) {
+  onReset(callback = (e) => {}) {
     const resetBtn = this.actionsEl.querySelector('[data-id="reset-btn"]');
     resetBtn.addEventListener("click", ({ target }) => callback(target));
+  }
+
+  /**
+   * @public
+   */
+  onQuit(callback = (e) => {}) {
+    this.actionsEl
+      .querySelector('[data-id="quit-btn"]')
+      .addEventListener("click", ({ target }) => {
+        !this.isDestroyed && this.destroy();
+        void callback(target);
+      });
   }
 
   /**
@@ -324,11 +346,19 @@ class TicTacToe {
   createActionsHTML() {
     const container = this.createHTMLWrapper(["board-actions-container"]);
     const resetBtn = document.createElement("button");
+    const quitBtn = document.createElement("button");
 
     resetBtn.dataset.id = "reset-btn";
     resetBtn.textContent = "Reset";
     resetBtn.classList.add("reset-btn");
 
+    quitBtn.dataset.id = "quit-btn";
+    quitBtn.textContent = "Quit";
+
+    resetBtn.classList.add("reset-btn");
+    quitBtn.classList.add("reset-btn");
+
+    container.appendChild(quitBtn);
     container.appendChild(resetBtn);
 
     const turnIndicator = this.createHTMLWrapper(["turn-indicator-container"]);
@@ -359,7 +389,7 @@ class TicTacToe {
       "board-cell-top": rowId === 0,
       "board-cell": colId === 0 || colId === boardSize - 1,
     });
-    const boardWidth = this.boardEl.getBoundingClientRect().width * 0.5;
+    const boardWidth = this.boardEl.getBoundingClientRect().width * 0.4;
 
     btn.style.fontSize = `${Math.floor(boardWidth / boardSize)}px`;
     btn.classList.add("board-cell");

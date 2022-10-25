@@ -15,7 +15,7 @@ class OfflineTicTacToe extends TicTacToe {
       if (enableCPU && this.playersCount === 1) this.writeCPUCell();
     });
 
-    this.onResetBtnClick(this.resetAllStats.bind(this));
+    this.onReset(this.resetAllStats.bind(this));
   }
 
   /**

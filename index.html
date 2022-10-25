@@ -23,7 +23,49 @@
     <title>Local</title>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <div id="main-screen" class="main-screen">
+        <div class="main-screen-title">
+          <span>Tic</span>
+          <span>Tac</span>
+          <span>Toe</span>
+        </div>
+
+        <div class="main-screen-actions">
+          <button id="1-player-cpu">1 Player vs CPU</button>
+
+          <button id="2-players-local">2 Players</button>
+
+          <button id="2-players-online">2 Players Online</button>
+        </div>
+
+        <div class="main-screen-footer">
+          By
+          <a
+            href="https://github.com/angeleraser"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            @angeleraser
+          </a>
+        </div>
+      </div>
+
+      <div id="join-room-screen" class="join-room-screen">
+        <form autocomplete="off" id="room-name-form" class="room-name-form">
+          <button type="button" id="back-btn">Back</button>
+          <input
+            pattern="(\S)+"
+            id="room-name-input"
+            required
+            placeholder="Enter room name"
+            type="text"
+          />
+          <button type="submit">Join</button>
+        </form>
+      </div>
+    </div>
+
     <script type="module" src="./js/classes/tic-tac-toe.js"></script>
     <script type="module" src="./js/index.js"></script>
   </body>

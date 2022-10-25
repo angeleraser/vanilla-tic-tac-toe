@@ -1,6 +1,7 @@
 @import url("./reset-min.css");
 @import url("./variables.css");
 @import url("./board.css");
+@import url("./main-screen.css");
 
 body,
 #app {
@@ -20,4 +21,8 @@ body,
   overflow: hidden;
   padding: 40px;
   width: 100%;
+}
+
+#app button {
+  font-family: "Noto Sans Vai", sans-serif;
 }

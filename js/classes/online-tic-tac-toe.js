@@ -8,6 +8,8 @@ const EVENTS = {
   TWO_PLAYERS_JOIN: "two-players-join",
   PLAYER_DISCONNECT: "player-disconnect",
   RECOVER_STATE: "recover-state",
+  RESET: "reset",
+  QUIT: "quit",
 };
 
 class OnlineTicTacToe extends TicTacToe {
@@ -15,11 +17,10 @@ class OnlineTicTacToe extends TicTacToe {
     super(options);
     this.socket = io ? io("http://localhost:3000/") : null;
     this.id = this.socket.id;
-    this.isRemoteOnline = false;
+    this.isDestroyed = false;
   }
 
   init() {
-    localStorage.clear();
     if (this.socket === null) return;
 
     this.allowBoardWriting = false;
@@ -35,12 +36,12 @@ class OnlineTicTacToe extends TicTacToe {
         );
 
         this.writeBoardCell(cellValue, coords);
-
-        if (!this.getCurrentPlayer()) {
-          localStorage.setItem("CURRENT_PLAYER", cellValue);
-        }
-
         this.allowBoardWriting = false;
+      });
+
+      this.onReset(() => {
+        this.resetAllStats();
+        this.socket.emit(EVENTS.RESET, this.getEventPayload());
       });
 
       this.socket.emit(
@@ -57,7 +58,6 @@ class OnlineTicTacToe extends TicTacToe {
 
       this.socket.on(EVENTS.TWO_PLAYERS_JOIN, ({ socketId }) => {
         this.allowBoardWriting = true;
-        this.isRemoteOnline = true;
 
         console.log(`Player ${socketId} joined the room.`);
 
@@ -67,31 +67,48 @@ class OnlineTicTacToe extends TicTacToe {
         );
       });
 
-      this.socket.on(EVENTS.PLAYER_DISCONNECT, ({ socketId }) => {
-        this.allowBoardWriting = false;
-        this.isRemoteOnline = false;
-
-        console.warn(`Player ${socketId} left the room.`);
-
-        setTimeout(() => {
-          if (!this.isRemoteOnline) this.socket.disconnect();
-        }, 30000);
-      });
-
       this.socket.on(EVENTS.RECOVER_STATE, (payload) => {
         this.setState(payload.state);
-        this.allowBoardWriting = true;
         this.renderHTML(payload);
       });
 
       this.socket.on(EVENTS.UNABLE_JOIN, () => {
         alert("Unable to join room: " + this.roomid);
       });
+
+      this.socket.on(EVENTS.RESET, () => this.resetAllStats());
     });
+  }
+
+  onDisconnect(callback) {
+    if (!this.socket) return;
 
     this.socket.on("disconnect", () => {
       this.allowBoardWriting = false;
+      !this.isDestroyed && this.destroy();
+      callback && callback();
       console.warn("You has been disconnected from server.");
+    });
+
+    this.socket.on(EVENTS.PLAYER_DISCONNECT, ({ socketId }) => {
+      this.socket.disconnect();
+      console.warn(`Player ${socketId} left the room.`);
+      this.showMessage("The other party has left the room.");
+    });
+
+    this.socket.on(EVENTS.QUIT, () => {
+      this.socket.disconnect();
+      this.showMessage("The other party has quit the game.");
+    });
+  }
+
+  onQuit(callback) {
+    super.onQuit(() => {
+      this.isDestroyed = true;
+      if (!this.socket) return;
+      callback && callback();
+      this.socket.emit(EVENTS.QUIT, this.getEventPayload());
+      this.socket.disconnect();
     });
   }
 
@@ -108,15 +125,8 @@ class OnlineTicTacToe extends TicTacToe {
   /**
    * @private
    */
-  getNextPlayerKey() {
-    return this.state.isX ? this.PLAYERS.X : this.PLAYERS.O;
-  }
-
-  /**
-   * @private
-   */
-  getCurrentPlayer() {
-    return localStorage.getItem("CURRENT_PLAYER");
+  showMessage(msg = "") {
+    setTimeout(() => alert(msg), 1000);
   }
 }
 
