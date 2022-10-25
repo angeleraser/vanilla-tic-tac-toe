@@ -1,5 +1,7 @@
 import { TicTacToe } from "./tic-tac-toe.js";
 
+const SERVER_URL = "https://tic-tac-toe-angel.herokuapp.com/";
+
 const EVENTS = {
   BOARD_CLICK: "board-click",
   JOIN_ROOM: "join-room",
@@ -15,7 +17,7 @@ const EVENTS = {
 class OnlineTicTacToe extends TicTacToe {
   constructor(options) {
     super(options);
-    this.socket = io ? io("http://localhost:3000/") : null;
+    this.socket = io ? io(SERVER_URL) : null;
     this.id = this.socket.id;
     this.isDestroyed = false;
   }
@@ -104,11 +106,14 @@ class OnlineTicTacToe extends TicTacToe {
 
   onQuit(callback) {
     super.onQuit(() => {
-      this.isDestroyed = true;
       if (!this.socket) return;
-      callback && callback();
+
+      this.isDestroyed = true;
+
       this.socket.emit(EVENTS.QUIT, this.getEventPayload());
       this.socket.disconnect();
+
+      callback && callback();
     });
   }
 
