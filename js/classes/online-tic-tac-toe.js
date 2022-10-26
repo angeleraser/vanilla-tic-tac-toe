@@ -106,7 +106,10 @@ class OnlineTicTacToe extends TicTacToe {
 
       this.socket.on(EVENTS.RESET, () => this.resetAllStats());
 
-      this.socket.on(EVENTS.MATCH_READY, () => this.hideOverlay());
+      this.socket.on(EVENTS.MATCH_READY, () => {
+        this.hideOverlay();
+        this.isRemoteJoined = true;
+      });
     });
 
     setTimeout(() => {
@@ -126,7 +129,7 @@ class OnlineTicTacToe extends TicTacToe {
     this.socket.on("disconnect", () => {
       if (this.isRoomJoined) {
         const msg = this.isRemoteJoined
-          ? "An error connection has ocurred. \nYou has been disconnected from room."
+          ? "You has been disconnected from room."
           : "An connection error has ocurred while waiting the other party.";
 
         this.showMessage(msg, 250);
