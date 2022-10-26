@@ -20,7 +20,7 @@ class OnlineTicTacToe extends TicTacToe {
     super(options);
 
     try {
-      this.socket = io(DEV_SERVER_URL);
+      this.socket = io(PROD_SERVER_URL);
     } catch {
       this.socket = null;
     }

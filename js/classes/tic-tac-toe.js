@@ -230,6 +230,7 @@ class TicTacToe {
    */
   disableBoardWriting() {
     this.allowBoardWriting = false;
+    this.toggleDisableBoardCells();
   }
 
   /**
@@ -237,6 +238,19 @@ class TicTacToe {
    */
   enableBoardWriting() {
     this.allowBoardWriting = true;
+    this.toggleDisableBoardCells();
+  }
+
+  /**
+   * @private
+   */
+  toggleDisableBoardCells() {
+    const cells = this.boardEl.querySelectorAll(".board-cell");
+    cells.forEach((btn) => {
+      btn.classList[this.allowBoardWriting ? "remove" : "add"](
+        "board-cell-disabled"
+      );
+    });
   }
 
   /**
@@ -421,9 +435,9 @@ class TicTacToe {
     });
 
     const boardHeight =
-      (this.boardEl.getBoundingClientRect().height / this.boardSize) * 0.35;
+      (this.boardEl.getBoundingClientRect().height / this.boardSize) * 0.2;
     const boardWidth =
-      (this.boardEl.getBoundingClientRect().width / this.boardSize) * 0.25;
+      (this.boardEl.getBoundingClientRect().width / this.boardSize) * 0.2;
 
     btn.style.fontSize = `${Math.floor(boardHeight + boardWidth)}px`;
     btn.classList.add("board-cell");

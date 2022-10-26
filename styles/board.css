@@ -30,12 +30,14 @@
   translate: 0 50%;
   opacity: 0;
   animation-name: cell-fade-in;
-  cursor: not-allowed;
 }
 
 .board-cell.cell-fade-out {
   animation-name: cell-fade-out;
-  cursor: not-allowed;
+}
+
+.board-cell-disabled {
+  cursor: not-allowed !important;
 }
 
 @keyframes cell-fade-out {
@@ -46,6 +48,10 @@
 }
 
 @keyframes cell-fade-in {
+  from {
+    cursor: not-allowed;
+  }
+
   to {
     translate: 0;
     opacity: 1;
