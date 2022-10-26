@@ -26,27 +26,30 @@
   animation-fill-mode: forwards;
 }
 
-.board-cell.show-animation {
+.board-cell.cell-fade-in {
   translate: 0 50%;
   opacity: 0;
-  animation-name: show-animation;
+  animation-name: cell-fade-in;
+  cursor: not-allowed;
 }
 
-.board-cell.dispel-animation {
-  animation-name: dispel-animation;
+.board-cell.cell-fade-out {
+  animation-name: cell-fade-out;
+  cursor: not-allowed;
 }
 
-@keyframes dispel-animation {
+@keyframes cell-fade-out {
   to {
     translate: 0 50%;
     opacity: 0;
   }
 }
 
-@keyframes show-animation {
+@keyframes cell-fade-in {
   to {
     translate: 0;
     opacity: 1;
+    cursor: pointer;
   }
 }
 

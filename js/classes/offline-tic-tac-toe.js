@@ -9,8 +9,7 @@ class OfflineTicTacToe extends TicTacToe {
     this.render();
 
     this.onBoardClick(({ cellValue, coords }) => {
-      const enableCPU =
-        this.allowBoardWriting && !this.writeBoardCell(cellValue, coords);
+      const enableCPU = !this.writeBoardCell(cellValue, coords);
 
       if (enableCPU && this.playersCount === 1) this.writeCPUCell();
     });
@@ -34,15 +33,15 @@ class OfflineTicTacToe extends TicTacToe {
    * @private
    */
   writeCPUCell() {
-    this.allowBoardWriting = false;
+    this.disableBoardWriting();
 
     setTimeout(() => {
       const value = this.state.isX ? this.PLAYERS.X : this.PLAYERS.O;
       const coords = this.getCellCoords(this.getRandomCell());
 
       this.writeBoardCell(value, coords);
-      this.allowBoardWriting = true;
-    }, 1000);
+      this.enableBoardWriting();
+    }, 1500);
   }
 }
 

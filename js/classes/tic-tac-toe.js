@@ -73,8 +73,6 @@ function evalBoardAxies(board = [], key = "") {
   return { isMatch, axis: wAxis };
 }
 
-const PLAYERS = { X: "x", O: "o" };
-
 class TicTacToe {
   constructor(
     options = {
@@ -93,10 +91,10 @@ class TicTacToe {
 
     this.actionsEl = this.createActionsHTML();
     this.boardEl = this.createHTMLWrapper(["board-container"]);
-    this.loadingOverlayEl = this.createHTMLWrapper(["board-loading-overlay"]);
+    this.overlayEl = this.createHTMLWrapper(["board-loading-overlay"]);
     this.renderRoot = options.renderRoot;
+    this.PLAYERS = { X: "x", O: "o" };
     this.scoreEl = this.createScoreHTML();
-    this.PLAYERS = PLAYERS;
     this.isDestroyed = false;
 
     this.state = {
@@ -150,12 +148,18 @@ class TicTacToe {
     this.boardEl.addEventListener("click", (e) => {
       const { target: cell } = e;
 
-      if (cell.tagName !== "BUTTON" || this.state.isEnded || cell.dataset.value)
+      if (
+        cell.tagName !== "BUTTON" ||
+        this.state.isEnded ||
+        cell.dataset.value ||
+        !this.allowBoardWriting
+      ) {
         return;
+      }
 
       void callback({
         coords: this.getCellCoords(cell),
-        cellValue: this.state.isX ? PLAYERS.X : PLAYERS.O,
+        cellValue: this.state.isX ? this.PLAYERS.X : this.PLAYERS.O,
       });
     });
   }
@@ -165,28 +169,26 @@ class TicTacToe {
    */
   onReset(callback = (e) => {}) {
     const resetBtn = this.actionsEl.querySelector('[data-id="reset-btn"]');
-    resetBtn.addEventListener("click", ({ target }) => callback(target));
+    resetBtn?.addEventListener("click", callback);
   }
 
   /**
    * @public
    */
   onQuit(callback = (e) => {}) {
-    this.actionsEl
-      .querySelector('[data-id="quit-btn"]')
-      .addEventListener("click", ({ target }) => {
-        !this.isDestroyed && this.destroy();
-        void callback(target);
-      });
+    const quitBtn = this.actionsEl.querySelector('[data-id="quit-btn"]');
+
+    quitBtn?.addEventListener("click", ({ target }) => {
+      !this.isDestroyed && this.destroy();
+      void callback(target);
+    });
   }
 
   /**
    * @public
    */
   writeBoardCell(value = "", coords = []) {
-    const cellEl = this.boardEl.querySelector(
-      `[data-rowid="${coords[0]}"][data-colid="${coords[1]}"]`
-    );
+    const cellEl = this.boardEl.querySelector(`[data-coords="${coords}"]`);
 
     if (!cellEl) return;
 
@@ -226,6 +228,20 @@ class TicTacToe {
   /**
    * @public
    */
+  disableBoardWriting() {
+    this.allowBoardWriting = false;
+  }
+
+  /**
+   * @public
+   */
+  enableBoardWriting() {
+    this.allowBoardWriting = true;
+  }
+
+  /**
+   * @public
+   */
   renderHTML() {
     Object.keys(this.state.score).forEach(this.renderScoreHTML.bind(this));
     this.renderBoardHTML(this.boardSize);
@@ -233,13 +249,13 @@ class TicTacToe {
   }
 
   showOverlay(msg = "") {
-    this.loadingOverlayEl.textContent = msg;
-    this.renderRoot.appendChild(this.loadingOverlayEl);
+    this.overlayEl.textContent = msg;
+    this.renderRoot.appendChild(this.overlayEl);
   }
 
   hideOverlay() {
-    this.loadingOverlayEl.textContent = "";
-    this.renderRoot.removeChild(this.loadingOverlayEl);
+    this.overlayEl.textContent = "";
+    this.renderRoot.removeChild(this.overlayEl);
   }
 
   /**
@@ -335,7 +351,7 @@ class TicTacToe {
    */
   createScoreHTML() {
     const div = this.createHTMLWrapper(["score-container"]);
-    const players = [PLAYERS.X, "draw", PLAYERS.O];
+    const players = [this.PLAYERS.X, "draw", this.PLAYERS.O];
 
     players.forEach((p) => {
       const pContainer = this.createHTMLWrapper(["player", `player-${p}`]);
@@ -344,11 +360,11 @@ class TicTacToe {
         ["player-score"],
         [{ key: "id", value: p }]
       );
+
       pKey.textContent = p.toUpperCase();
       pScore.textContent = `0${p !== "draw" ? " Wins" : ""}`;
 
       pContainer.innerHTML += pKey.outerHTML + pScore.outerHTML;
-
       div.innerHTML += pContainer.outerHTML;
     });
 
@@ -402,7 +418,6 @@ class TicTacToe {
       "board-cell-left": colId === 0,
       "board-cell-right": colId === boardSize - 1,
       "board-cell-top": rowId === 0,
-      "board-cell": colId === 0 || colId === boardSize - 1,
     });
 
     const boardHeight =
@@ -412,10 +427,9 @@ class TicTacToe {
 
     btn.style.fontSize = `${Math.floor(boardHeight + boardWidth)}px`;
     btn.classList.add("board-cell");
-    btn.classList.add("show-animation");
+    btn.classList.add("cell-fade-in");
     classes.length && btn.classList.add(...classes);
-    btn.dataset.rowid = rowId;
-    btn.dataset.colid = colId;
+    btn.dataset.coords = [rowId, colId];
     btn.dataset.value = this.state.gameBoard[rowId][colId] || "";
     btn.textContent = this.state.gameBoard[rowId][colId] || "";
     btn.style.animationDuration = `${this.animationDuration}s`;
@@ -428,9 +442,11 @@ class TicTacToe {
    * @private
    */
   showDispelBoardAnimation() {
-    return this.boardEl.querySelectorAll(".board-cell").forEach((btn) => {
-      btn.classList.remove("show-animation");
-      btn.classList.add("dispel-animation");
+    const cells = this.boardEl.querySelectorAll(".board-cell");
+
+    cells.forEach((btn) => {
+      btn.classList.remove("cell-fade-in");
+      btn.classList.add("cell-fade-out");
     });
   }
 
@@ -438,10 +454,8 @@ class TicTacToe {
    * @private
    */
   decorateWinnerCells(axis = []) {
-    axis.forEach((p, i) => {
-      const btn = this.boardEl.querySelector(
-        `[data-rowid='${p[0]}'][data-colid='${p[1]}']`
-      );
+    axis.forEach((coords, i) => {
+      const btn = this.boardEl.querySelector(`[data-coords='${coords}']`);
       btn.classList.add("board-cell-match");
       btn.style.transitionDelay = `${(i + 1) / 10}s`;
     });
@@ -450,10 +464,10 @@ class TicTacToe {
   /**
    * @private
    */
-  renderScoreHTML(winnerCellKey = "") {
-    const suffix = winnerCellKey !== "draw" ? " Wins" : "";
-    const el = this.scoreEl.querySelector(`[data-id="${winnerCellKey}"]`);
-    el && (el.textContent = `${this.state.score[winnerCellKey]}${suffix}`);
+  renderScoreHTML(label = "") {
+    const suffix = label !== "draw" ? " Wins" : "";
+    const el = this.scoreEl.querySelector(`[data-id="${label}"]`);
+    el && (el.textContent = `${this.state.score[label]}${suffix}`);
   }
 
   /**
@@ -461,11 +475,15 @@ class TicTacToe {
    */
   setTurnIndicatorHTML() {
     this.actionsEl
-      .querySelector(`.player-${this.state.isX ? "x" : "o"}-indicator`)
+      .querySelector(
+        `.player-${this.state.isX ? this.PLAYERS.X : this.PLAYERS.O}-indicator`
+      )
       .classList.add("active");
 
     this.actionsEl
-      .querySelector(`.player-${!this.state.isX ? "x" : "o"}-indicator`)
+      .querySelector(
+        `.player-${!this.state.isX ? this.PLAYERS.X : this.PLAYERS.O}-indicator`
+      )
       .classList.remove("active");
   }
 
@@ -473,9 +491,8 @@ class TicTacToe {
    * @private
    */
   getCellCoords(cellEl) {
-    const { rowid, colid } = cellEl.dataset;
-
-    return [Number(rowid), Number(colid)];
+    const { coords } = cellEl.dataset;
+    return coords.split(",").map((v) => Number(v));
   }
 }
 

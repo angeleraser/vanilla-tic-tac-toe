@@ -10,7 +10,6 @@ const EVENTS = {
   UNABLE_JOIN: "unable-join",
   TWO_PLAYERS_JOIN: "two-players-join",
   PLAYER_DISCONNECT: "player-disconnect",
-  RECOVER_STATE: "recover-state",
   RESET: "reset",
   QUIT: "quit",
   MATCH_READY: "match-ready",
@@ -28,7 +27,7 @@ class OnlineTicTacToe extends TicTacToe {
   }
 
   init(onUnableToConnect = () => {}) {
-    this.allowBoardWriting = false;
+    this.disableBoardWriting();
     this.render();
 
     this.showOverlay("Joining to room...");
@@ -39,15 +38,13 @@ class OnlineTicTacToe extends TicTacToe {
       console.log(`Connected to room: ${this.roomid}.`);
 
       this.onBoardClick(({ cellValue, coords }) => {
-        if (!this.allowBoardWriting) return;
-
         this.socket.emit(
           EVENTS.BOARD_CLICK,
           this.getEventPayload({ cellValue, coords })
         );
 
         this.writeBoardCell(cellValue, coords);
-        this.allowBoardWriting = false;
+        this.disableBoardWriting();
       });
 
       this.onReset(() => {
@@ -64,29 +61,18 @@ class OnlineTicTacToe extends TicTacToe {
         const { cellValue, coords } = payload;
 
         this.writeBoardCell(cellValue, coords);
-        this.allowBoardWriting = true;
+        this.enableBoardWriting();
       });
 
       this.socket.on(EVENTS.TWO_PLAYERS_JOIN, ({ socketId }) => {
-        this.allowBoardWriting = true;
-
-        console.log(`Player ${socketId} joined the room.`);
         this.hideOverlay();
+        this.enableBoardWriting();
+        console.log(`Player ${socketId} joined the room.`);
 
         this.socket.emit(
           EVENTS.MATCH_READY,
           this.getEventPayload({ state: this.state })
         );
-
-        this.socket.emit(
-          EVENTS.RECOVER_STATE,
-          this.getEventPayload({ state: this.state })
-        );
-      });
-
-      this.socket.on(EVENTS.RECOVER_STATE, (payload) => {
-        this.setState(payload.state);
-        this.renderHTML(payload);
       });
 
       this.socket.on(EVENTS.UNABLE_JOIN, ({ roomid }) => {
@@ -108,7 +94,7 @@ class OnlineTicTacToe extends TicTacToe {
 
     setTimeout(() => {
       if (!this.socket?.connected && !this.isDestroyed) {
-        this.showMessage("Unable to connect server, please try again.");
+        this.showMessage("Unable to connect server, please try again.", 250);
         this.destroy();
         this.hideOverlay();
         this.socket?.disconnect();
@@ -121,7 +107,7 @@ class OnlineTicTacToe extends TicTacToe {
     if (!this.socket) return;
 
     this.socket.on("disconnect", () => {
-      this.allowBoardWriting = false;
+      this.disableBoardWriting();
       this.destroy();
       callback && callback();
       console.warn("You has been disconnected from server.");
@@ -163,8 +149,8 @@ class OnlineTicTacToe extends TicTacToe {
   /**
    * @private
    */
-  showMessage(msg = "") {
-    setTimeout(() => alert(msg), 1000);
+  showMessage(msg = "", delay = 1000) {
+    setTimeout(() => alert(msg), delay);
   }
 }
 
