@@ -27,24 +27,9 @@
 }
 
 .board-cell.cell-fade-in {
-  translate: 0 50%;
-  opacity: 0;
   animation-name: cell-fade-in;
-}
-
-.board-cell.cell-fade-out {
-  animation-name: cell-fade-out;
-}
-
-.board-cell-disabled {
-  cursor: not-allowed !important;
-}
-
-@keyframes cell-fade-out {
-  to {
-    translate: 0 50%;
-    opacity: 0;
-  }
+  opacity: 0;
+  translate: 0 50%;
 }
 
 @keyframes cell-fade-in {
@@ -57,6 +42,21 @@
     opacity: 1;
     cursor: pointer;
   }
+}
+
+.board-cell.cell-fade-out {
+  animation-name: cell-fade-out;
+}
+
+@keyframes cell-fade-out {
+  to {
+    translate: 0 50%;
+    opacity: 0;
+  }
+}
+
+.board-disabled .board-cell {
+  cursor: not-allowed !important;
 }
 
 .board-cell-left {

@@ -148,13 +148,18 @@ class TicTacToe {
     this.boardEl.addEventListener("click", (e) => {
       const { target: cell } = e;
 
+      const isBoardDisabled =
+        !this.allowBoardWriting ||
+        this.boardEl.className.includes("board-disabled") ||
+        cell.style.cursor === "not-allowed";
+
       if (
         cell.tagName !== "BUTTON" ||
         this.state.isEnded ||
         cell.dataset.value ||
-        !this.allowBoardWriting
+        isBoardDisabled
       ) {
-        return;
+        return e.preventDefault();
       }
 
       void callback({
@@ -245,12 +250,7 @@ class TicTacToe {
    * @private
    */
   toggleDisableBoardCells() {
-    const cells = this.boardEl.querySelectorAll(".board-cell");
-    cells.forEach((btn) => {
-      btn.classList[this.allowBoardWriting ? "remove" : "add"](
-        "board-cell-disabled"
-      );
-    });
+    this.allowBoardWriting ? this.enableBoardHTML() : this.disableBoardHTML();
   }
 
   /**
@@ -327,8 +327,13 @@ class TicTacToe {
     resetDelay += (accumDelay / (this.boardSize * 0.1)) * 80 + 500;
 
     this.resetTurnState();
+    this.disableBoardHTML();
     setTimeout(this.showDispelBoardAnimation.bind(this), resetDelay);
-    setTimeout(() => this.renderHTML(), (resetDelay += accumDelay * 150));
+
+    setTimeout(() => {
+      this.renderHTML();
+      this.enableBoardHTML();
+    }, (resetDelay += accumDelay * 150));
   }
 
   /**
@@ -462,6 +467,20 @@ class TicTacToe {
       btn.classList.remove("cell-fade-in");
       btn.classList.add("cell-fade-out");
     });
+  }
+
+  /**
+   * @private
+   */
+  enableBoardHTML() {
+    this.boardEl.classList.remove("board-disabled");
+  }
+
+  /**
+   * @private
+   */
+  disableBoardHTML() {
+    this.boardEl.classList.add("board-disabled");
   }
 
   /**
