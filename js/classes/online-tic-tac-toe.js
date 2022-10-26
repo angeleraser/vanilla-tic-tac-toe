@@ -18,6 +18,7 @@ const EVENTS = {
 class OnlineTicTacToe extends TicTacToe {
   constructor(options) {
     super(options);
+    this.playerKey = null;
 
     try {
       this.socket = io(PROD_SERVER_URL);
@@ -43,7 +44,14 @@ class OnlineTicTacToe extends TicTacToe {
           this.getEventPayload({ cellValue, coords })
         );
 
-        this.writeBoardCell(cellValue, coords);
+        if (!this.playerKey) this.playerKey = cellValue;
+
+        const isDone = this.writeBoardCell(cellValue, coords);
+
+        if (isDone && this.playerKey === this.lastWinner) {
+          return this.enableBoardWriting();
+        }
+
         this.disableBoardWriting();
       });
 
@@ -60,7 +68,12 @@ class OnlineTicTacToe extends TicTacToe {
       this.socket.on(EVENTS.BOARD_CLICK, (payload) => {
         const { cellValue, coords } = payload;
 
-        this.writeBoardCell(cellValue, coords);
+        const isDone = this.writeBoardCell(cellValue, coords);
+
+        if (isDone && this.playerKey !== this.lastWinner) {
+          return this.disableBoardWriting();
+        }
+
         this.enableBoardWriting();
       });
 

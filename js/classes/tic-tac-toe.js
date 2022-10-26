@@ -96,6 +96,7 @@ class TicTacToe {
     this.PLAYERS = { X: "x", O: "o" };
     this.scoreEl = this.createScoreHTML();
     this.isDestroyed = false;
+    this.lastWinner = null;
 
     this.state = {
       gameBoard: createBoardTemplate(options.boardSize),
@@ -235,7 +236,7 @@ class TicTacToe {
    */
   disableBoardWriting() {
     this.allowBoardWriting = false;
-    this.toggleDisableBoardCells();
+    this.disableBoardHTML();
   }
 
   /**
@@ -243,14 +244,7 @@ class TicTacToe {
    */
   enableBoardWriting() {
     this.allowBoardWriting = true;
-    this.toggleDisableBoardCells();
-  }
-
-  /**
-   * @private
-   */
-  toggleDisableBoardCells() {
-    this.allowBoardWriting ? this.enableBoardHTML() : this.disableBoardHTML();
+    this.enableBoardHTML();
   }
 
   /**
@@ -292,6 +286,7 @@ class TicTacToe {
     if (!this.state.isEnded) return false;
 
     isMatch && this.decorateWinnerCells(axis);
+    isMatch && (this.lastWinner = cellValue);
 
     const key = isMatch ? cellValue : "draw";
     this.updateScore(key);
@@ -305,7 +300,7 @@ class TicTacToe {
    */
   resetTurnState() {
     this.state.isEnded = false;
-    this.state.isX = true;
+    this.state.isX = this.lastWinner === this.PLAYERS.X;
     this.state.movesCount = 0;
     this.state.gameBoard = createBoardTemplate(this.boardSize);
   }
@@ -328,11 +323,12 @@ class TicTacToe {
 
     this.resetTurnState();
     this.disableBoardHTML();
+    const wasEnabled = this.allowBoardWriting;
     setTimeout(this.showDispelBoardAnimation.bind(this), resetDelay);
 
     setTimeout(() => {
       this.renderHTML();
-      this.enableBoardHTML();
+      wasEnabled && this.enableBoardHTML();
     }, (resetDelay += accumDelay * 150));
   }
 
