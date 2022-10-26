@@ -88,7 +88,6 @@ class TicTacToe {
     this.playersCount = options.players || 1;
     this.roomid = options.roomid;
     this.totalCells = Math.pow(options.boardSize, 2);
-
     this.actionsEl = this.createActionsHTML();
     this.boardEl = this.createHTMLWrapper(["board-container"]);
     this.overlayEl = this.createHTMLWrapper(["board-loading-overlay"]);
@@ -97,6 +96,7 @@ class TicTacToe {
     this.scoreEl = this.createScoreHTML();
     this.isDestroyed = false;
     this.lastWinner = null;
+    this.isShowOverlay = false;
 
     this.state = {
       gameBoard: createBoardTemplate(options.boardSize),
@@ -259,11 +259,13 @@ class TicTacToe {
   showOverlay(msg = "") {
     this.overlayEl.textContent = msg;
     this.renderRoot.appendChild(this.overlayEl);
+    this.isShowOverlay = true;
   }
 
   hideOverlay() {
     this.overlayEl.textContent = "";
-    this.renderRoot.removeChild(this.overlayEl);
+    this.isShowOverlay && this.renderRoot.removeChild(this.overlayEl);
+    this.isShowOverlay = false;
   }
 
   /**

@@ -19,6 +19,8 @@ class OnlineTicTacToe extends TicTacToe {
   constructor(options) {
     super(options);
     this.playerKey = null;
+    this.isRoomJoined = false;
+    this.isRemoteJoined = false;
 
     try {
       this.socket = io(PROD_SERVER_URL);
@@ -34,6 +36,7 @@ class OnlineTicTacToe extends TicTacToe {
     this.showOverlay("Joining to room...");
 
     this.socket?.on("connect", () => {
+      this.isRoomJoined = true;
       this.hideOverlay();
       this.showOverlay("Waiting for the other party...");
       console.log(`Connected to room: ${this.roomid}.`);
@@ -81,6 +84,7 @@ class OnlineTicTacToe extends TicTacToe {
         this.hideOverlay();
         this.enableBoardWriting();
         console.log(`Player ${socketId} joined the room.`);
+        this.isRemoteJoined = true;
 
         this.socket.emit(
           EVENTS.MATCH_READY,
@@ -120,9 +124,19 @@ class OnlineTicTacToe extends TicTacToe {
     if (!this.socket) return;
 
     this.socket.on("disconnect", () => {
-      this.disableBoardWriting();
+      if (this.isRoomJoined) {
+        const msg = this.isRemoteJoined
+          ? "An error connection has ocurred. \nYou has been disconnected from room."
+          : "An connection error has ocurred while waiting the other party.";
+
+        this.showMessage(msg, 250);
+      }
+
+      this.hideOverlay();
       this.destroy();
+      this.socket.disconnect();
       callback && callback();
+
       console.warn("You has been disconnected from server.");
     });
 
