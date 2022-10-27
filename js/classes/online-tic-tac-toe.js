@@ -4,15 +4,15 @@ const PROD_SERVER_URL = "https://tic-tac-toe-angel.herokuapp.com/";
 const DEV_SERVER_URL = "http://localhost:3000";
 
 const EVENTS = {
+  ALLOW_WRITE: "allow-write",
   BOARD_CLICK: "board-click",
   JOIN_ROOM: "join-room",
-  ALLOW_WRITE: "allow-write",
-  UNABLE_JOIN: "unable-join",
-  TWO_PLAYERS_JOIN: "two-players-join",
-  PLAYER_DISCONNECT: "player-disconnect",
-  RESET: "reset",
-  QUIT: "quit",
   MATCH_READY: "match-ready",
+  PLAYER_DISCONNECT: "player-disconnect",
+  QUIT: "quit",
+  RESET: "reset",
+  TWO_PLAYERS_JOIN: "two-players-join",
+  UNABLE_JOIN: "unable-join",
 };
 
 class OnlineTicTacToe extends TicTacToe {
@@ -23,7 +23,7 @@ class OnlineTicTacToe extends TicTacToe {
     this.isRemoteJoined = false;
 
     try {
-      this.socket = io(PROD_SERVER_URL);
+      this.socket = io(DEV_SERVER_URL);
     } catch {
       this.socket = null;
     }
@@ -115,8 +115,8 @@ class OnlineTicTacToe extends TicTacToe {
     setTimeout(() => {
       if (!this.socket?.connected && !this.isDestroyed) {
         this.showMessage("Unable to connect server, please try again.", 250);
-        this.destroy();
         this.hideOverlay();
+        this.destroy();
         this.socket?.disconnect();
         onUnableToConnect();
       }
@@ -157,11 +157,8 @@ class OnlineTicTacToe extends TicTacToe {
 
   onQuit(callback) {
     super.onQuit(() => {
-      this.isDestroyed = true;
-
       this.socket?.emit(EVENTS.QUIT, this.getEventPayload());
       this.socket?.disconnect();
-
       callback && callback();
     });
   }
