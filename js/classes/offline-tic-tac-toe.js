@@ -1,4 +1,4 @@
-import { TicTacToe, TicTacToePlayer } from "./tic-tac-toe.js";
+import { TicTacToe } from "./tic-tac-toe.js";
 
 class OfflineTicTacToe extends TicTacToe {
   constructor(options) {
@@ -6,29 +6,12 @@ class OfflineTicTacToe extends TicTacToe {
   }
 
   init() {
-    this.joinPlayer(
-      new TicTacToePlayer({
-        name: "Player",
-        key: "x",
-        role: this.PLAYERS_ROLES.HOME,
-      })
-    );
-
-    this.joinPlayer(
-      new TicTacToePlayer({
-        name: "CPU",
-        key: "o",
-        role: this.PLAYERS_ROLES.VISITOR,
-      })
-    );
-
     this.render();
 
-    this.onBoardClick(({ player, coords }) => {
+    this.onBoardClick(({ coords, value }) => {
       const isFinalized = this.writeBoardCell({
-        value: player.key,
+        value,
         coords,
-        player,
       });
 
       if (!isFinalized && this.playersCount === 1) this.writeCPUCell();
@@ -55,17 +38,16 @@ class OfflineTicTacToe extends TicTacToe {
   writeCPUCell() {
     this.disableBoardWriting();
 
-    const cpuPlayer = this.players.visitor;
+    const cpuKey = this.PLAYERS_KEYS.O;
     const delay = 1500;
 
     setTimeout(() => {
       const isFinalized = this.writeBoardCell({
-        value: cpuPlayer.key,
+        value: cpuKey,
         coords: this.getCellCoords(this.getRandomCell()),
-        player: cpuPlayer,
       });
 
-      if (isFinalized && this.lastWinner === cpuPlayer.role) {
+      if (isFinalized && this.lastWinner === cpuKey) {
         this.resetTurnState();
         return setTimeout(this.writeCPUCell.bind(this), delay);
       }

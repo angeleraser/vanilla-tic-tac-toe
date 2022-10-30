@@ -23,7 +23,7 @@ class OnlineTicTacToe extends TicTacToe {
     this.isRemoteJoined = false;
 
     try {
-      this.socket = io(PROD_SERVER_URL);
+      this.socket = io(DEV_SERVER_URL);
     } catch {
       this.socket = null;
     }
@@ -41,33 +41,27 @@ class OnlineTicTacToe extends TicTacToe {
       this.showOverlay("Waiting for the other party...");
       console.log(`Connected to room: ${this.roomid}.`);
 
-      this.onBoardClick(({ player, coords }) => {
+      this.onBoardClick(({ value, coords }) => {
+        this.disableBoardWriting();
+
         this.socket.emit(
           EVENTS.BOARD_CLICK,
-          this.getEventPayload({ cellValue: player.key, coords, player })
+          this.getEventPayload({
+            cellValue: value,
+            coords,
+          })
         );
 
-        if (!this.playerKey) this.playerKey = cellValue;
+        if (!this.playerKey) this.playerKey = value;
 
-        const isDone = this.writeBoardCell({
-          value: player.key,
+        const isFinalized = this.writeBoardCell({
+          value,
           coords,
-          player,
         });
 
-        if (
-          ((isDone || this.state.isDraw) &&
-            this.playerKey === this.lastWinner) ||
-          (this.state.isDraw &&
-            !this.lastWinner &&
-            this.playerKey === this.PLAYERS_KEYS.X)
-        ) {
-          this.resetTurnState();
-          return this.enableBoardWriting();
-        }
+        if (this.lastWinner === this.playerKey) this.enableBoardWriting();
 
-        isDone && this.resetTurnState();
-        this.disableBoardWriting();
+        isFinalized && this.resetTurnState();
       });
 
       this.socket.emit(
@@ -76,29 +70,20 @@ class OnlineTicTacToe extends TicTacToe {
       );
 
       this.socket.on(EVENTS.BOARD_CLICK, (payload) => {
-        const { cellValue, coords, player } = payload;
+        this.enableBoardWriting();
 
-        const isDone = this.writeBoardCell({
+        const { cellValue, coords } = payload;
+
+        const isFinalized = this.writeBoardCell({
           value: cellValue,
           coords,
-          player,
         });
 
-        if (
-          (this.state.isDraw && this.playerKey === this.lastWinner) ||
-          (this.state.isDraw && !this.lastWinner)
-        ) {
-          this.resetTurnState();
-          return this.enableBoardWriting();
+        if (this.lastWinner !== this.playerKey && isFinalized) {
+          this.disableBoardWriting();
         }
 
-        if (isDone && this.playerKey !== this.lastWinner) {
-          this.resetTurnState();
-          return this.disableBoardWriting();
-        }
-
-        isDone && this.resetTurnState();
-        this.enableBoardWriting();
+        isFinalized && this.resetTurnState();
       });
 
       this.socket.on(EVENTS.TWO_PLAYERS_JOIN, ({ socketId }) => {
@@ -107,10 +92,7 @@ class OnlineTicTacToe extends TicTacToe {
         console.log(`Player ${socketId} joined the room.`);
         this.isRemoteJoined = true;
 
-        this.socket.emit(
-          EVENTS.MATCH_READY,
-          this.getEventPayload({ state: this.state })
-        );
+        this.socket.emit(EVENTS.MATCH_READY, this.getEventPayload());
       });
 
       this.socket.on(EVENTS.UNABLE_JOIN, ({ roomid }) => {

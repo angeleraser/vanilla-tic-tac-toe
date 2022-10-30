@@ -76,8 +76,7 @@
 }
 
 .board-cell[data-value="x"],
-.board-cell[data-role="home"],
-.player-home {
+.player-x {
   color: var(--blue);
 }
 
@@ -87,8 +86,7 @@
 }
 
 .board-cell[data-value="o"],
-.board-cell[data-role="visitor"],
-.player-visitor {
+.player-o {
   color: var(--turquoise);
 }
 
@@ -131,8 +129,7 @@
 }
 
 .player-key,
-.reset-btn,
-.turn-indicator {
+.reset-btn {
   font-size: 24px;
 }
 
@@ -140,40 +137,6 @@
   border: none;
   color: var(--dark-gray);
   text-decoration: underline;
-}
-
-.turn-indicator-container {
-  color: var(--dark-gray);
-  text-align: center;
-}
-
-.turn-indicator {
-  border-radius: 30px;
-  border: 1px solid var(--light-gray);
-  display: flex;
-  margin-top: 6px;
-  overflow: hidden;
-  width: 120px;
-}
-
-.turn-indicator span {
-  font-weight: 700;
-  padding: 12px;
-  text-align: center;
-  text-transform: uppercase;
-  width: 50%;
-}
-
-.turn-indicator .active {
-  color: white;
-}
-
-.player-home-indicator.active {
-  background-color: var(--blue);
-}
-
-.player-o-indicavisitoror.active {
-  background-color: var(--turquoise);
 }
 
 .board-loading-overlay {

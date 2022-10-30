@@ -22,7 +22,7 @@ function classNames(deps) {
   return classes.length ? classes.filter((v) => v) : "";
 }
 
-function evalBoardAxies(board = [], key = "") {
+function evalBoardAxies(board, key) {
   function getZAxis(coords = [0, 0]) {
     const arr = [];
 
@@ -73,14 +73,6 @@ function evalBoardAxies(board = [], key = "") {
   return { isMatch, axis: wAxis };
 }
 
-export class TicTacToePlayer {
-  constructor({ name, key, role }) {
-    this.name = name;
-    this.key = key;
-    this.role = role;
-  }
-}
-
 class TicTacToe {
   constructor(
     options = {
@@ -98,7 +90,6 @@ class TicTacToe {
     this.totalCells = Math.pow(options.boardSize, 2);
     this.renderRoot = options.renderRoot;
     this.PLAYERS_KEYS = { X: "x", O: "o" };
-    this.PLAYERS_ROLES = { HOME: "home", VISITOR: "visitor" };
     this.isDestroyed = false;
     this.lastWinner = null;
     this.isShowOverlay = false;
@@ -109,21 +100,17 @@ class TicTacToe {
       isDraw: false,
       movesCount: 0,
       score: {
-        [this.PLAYERS_ROLES.HOME]: 0,
-        [this.PLAYERS_ROLES.VISITOR]: 0,
+        [this.PLAYERS_KEYS.X]: 0,
+        [this.PLAYERS_KEYS.O]: 0,
         draw: 0,
       },
     };
-    this.players = {
-      [this.PLAYERS_ROLES.HOME]: null,
-      [this.PLAYERS_ROLES.VISITOR]: null,
-    };
-    this.currentTurn = this.PLAYERS_ROLES.HOME;
+    this.currentTurn = this.PLAYERS_KEYS.X;
 
     this.boardEl = this.createHTMLWrapper(["board-container"]);
     this.overlayEl = this.createHTMLWrapper(["board-loading-overlay"]);
-    this.actionsEl = null;
-    this.scoreEl = null;
+    this.actionsEl = this.createActionsHTML();
+    this.scoreEl = this.createScoreHTML();
   }
 
   /**
@@ -137,9 +124,6 @@ class TicTacToe {
    * @public
    */
   render() {
-    this.actionsEl = this.createActionsHTML();
-    this.scoreEl = this.createScoreHTML();
-
     this.renderRoot.appendChild(this.scoreEl);
     this.renderRoot.appendChild(this.boardEl);
     this.renderRoot.appendChild(this.actionsEl);
@@ -168,7 +152,7 @@ class TicTacToe {
   /**
    * @public
    */
-  onBoardClick(callback = (e) => {}) {
+  onBoardClick(callback) {
     this.boardEl.addEventListener("click", (e) => {
       const { target: cell } = e;
 
@@ -176,7 +160,7 @@ class TicTacToe {
 
       void callback({
         coords: this.getCellCoords(cell),
-        player: this.getCurrentPlayer(),
+        value: this.currentTurn,
       });
     });
   }
@@ -203,7 +187,7 @@ class TicTacToe {
   /**
    * @public
    */
-  onQuit(callback = (e) => {}) {
+  onQuit(callback) {
     const quitBtn = this.actionsEl.querySelector('[data-id="quit-btn"]');
 
     quitBtn?.addEventListener("click", ({ target }) => {
@@ -215,23 +199,23 @@ class TicTacToe {
   /**
    * @public
    */
-  writeBoardCell({ value = "", coords = [], player }) {
+  writeBoardCell({ value, coords }) {
     const cellEl = this.boardEl.querySelector(`[data-coords="${coords}"]`);
 
     cellEl.textContent = value;
     cellEl.dataset.value = value;
 
     this.addNewMove(value, coords);
-    return this.checkForAxiesMatch(value, player);
+    return this.checkForAxiesMatch(value);
   }
 
   /**
    * @private
    */
-  setCurrentTurnRole() {
+  setCurrentTurn() {
     const roles = {
-      [this.PLAYERS_ROLES.HOME]: this.PLAYERS_ROLES.VISITOR,
-      [this.PLAYERS_ROLES.VISITOR]: this.PLAYERS_ROLES.HOME,
+      [this.PLAYERS_KEYS.X]: this.PLAYERS_KEYS.O,
+      [this.PLAYERS_KEYS.O]: this.PLAYERS_KEYS.X,
     };
 
     this.currentTurn = roles[this.currentTurn];
@@ -278,7 +262,7 @@ class TicTacToe {
   /**
    * @public
    */
-  showOverlay(msg = "") {
+  showOverlay(msg) {
     this.overlayEl.textContent = msg;
     this.renderRoot.appendChild(this.overlayEl);
     this.isShowOverlay = true;
@@ -288,7 +272,7 @@ class TicTacToe {
    * @public
    */
   hideOverlay() {
-    this.overlayEl.textContent = "";
+    this.overlayEl.textContent;
     this.isShowOverlay && this.renderRoot.removeChild(this.overlayEl);
     this.isShowOverlay = false;
   }
@@ -296,16 +280,16 @@ class TicTacToe {
   /**
    * @private
    */
-  addNewMove(cellValue = "", coords = []) {
+  addNewMove(cellValue, coords) {
     this.state.gameBoard[coords[0]][coords[1]] = cellValue;
-    this.setCurrentTurnRole();
+    this.setCurrentTurn();
     this.state.movesCount += 1;
   }
 
   /**
    * @private
    */
-  checkForAxiesMatch(cellValue = "", player) {
+  checkForAxiesMatch(cellValue) {
     const { isMatch, axis } = evalBoardAxies(this.state.gameBoard, cellValue);
     this.state.isEnded = isMatch || this.state.movesCount === this.totalCells;
 
@@ -313,9 +297,9 @@ class TicTacToe {
 
     isMatch && this.decorateWinnerCells(axis);
     this.state.isDraw = !isMatch;
-    this.lastWinner = isMatch ? player.role : this.lastWinner;
+    this.lastWinner = isMatch ? cellValue : this.lastWinner;
 
-    const key = isMatch ? player.role : "draw";
+    const key = isMatch ? cellValue : "draw";
     this.updateScore(key);
     this.finalizeTurn(key);
 
@@ -324,7 +308,7 @@ class TicTacToe {
 
   resetTurnState() {
     this.state.isEnded = false;
-    this.currentTurn = this.lastWinner ?? this.PLAYERS_ROLES.HOME;
+    this.currentTurn = this.lastWinner ? this.lastWinner : this.PLAYERS_KEYS.X;
     this.state.movesCount = 0;
     this.state.gameBoard = createBoardTemplate(this.boardSize);
     this.state.isDraw = false;
@@ -333,7 +317,7 @@ class TicTacToe {
   /**
    * @private
    */
-  updateScore(key = "") {
+  updateScore(key) {
     this.state.score[key] += 1;
   }
 
@@ -347,11 +331,11 @@ class TicTacToe {
     resetDelay += (accumDelay / (this.boardSize * 0.1)) * 80 + 500;
 
     this.disableBoardHTML();
-    const wasEnabled = this.allowBoardWriting;
     setTimeout(this.showDispelBoardAnimation.bind(this), resetDelay);
 
     setTimeout(() => {
       this.renderHTML();
+      const wasEnabled = this.allowBoardWriting;
       wasEnabled && this.enableBoardHTML();
     }, (resetDelay += accumDelay * 150));
   }
@@ -359,7 +343,7 @@ class TicTacToe {
   /**
    * @private
    */
-  renderBoardHTML(size = 0) {
+  renderBoardHTML(size) {
     const buttons = createBoardTemplate(size).map((row, ri) => {
       return row.map((_, ci) => this.createBoardCellHTML(ri, ci, size));
     });
@@ -377,10 +361,10 @@ class TicTacToe {
   /**
    * @private
    */
-  createHTMLWrapper(classes = [], datasets = []) {
+  createHTMLWrapper(classes, datasets) {
     const container = document.createElement("div");
     container.classList.add(...classes);
-    datasets.forEach((ds) => (container.dataset[ds.key] = ds.value));
+    datasets?.forEach((ds) => (container.dataset[ds.key] = ds.value));
 
     return container;
   }
@@ -390,11 +374,7 @@ class TicTacToe {
    */
   createScoreHTML() {
     const div = this.createHTMLWrapper(["score-container"]);
-    const players = [
-      this.PLAYERS_ROLES.HOME,
-      "draw",
-      this.PLAYERS_ROLES.VISITOR,
-    ];
+    const players = [this.PLAYERS_KEYS.X, "draw", this.PLAYERS_KEYS.O];
 
     players.forEach((p) => {
       const pContainer = this.createHTMLWrapper(["player", `player-${p}`]);
@@ -432,7 +412,7 @@ class TicTacToe {
   /**
    * @private
    */
-  createBoardCellHTML(rowId = 0, colId = 0, boardSize = 0) {
+  createBoardCellHTML(rowId, colId, boardSize) {
     const btn = document.createElement("button");
 
     const classes = classNames({
@@ -489,7 +469,7 @@ class TicTacToe {
   /**
    * @private
    */
-  decorateWinnerCells(axis = []) {
+  decorateWinnerCells(axis) {
     axis.forEach((coords, i) => {
       const btn = this.boardEl.querySelector(`[data-coords='${coords}']`);
       btn.classList.add("board-cell-match");
@@ -500,7 +480,7 @@ class TicTacToe {
   /**
    * @private
    */
-  renderScoreHTML(label = "") {
+  renderScoreHTML(label) {
     const suffix = label !== "draw" ? " Wins" : "";
     const el = this.scoreEl.querySelector(`[data-id="${label}"]`);
     el && (el.textContent = `${this.state.score[label]}${suffix}`);
