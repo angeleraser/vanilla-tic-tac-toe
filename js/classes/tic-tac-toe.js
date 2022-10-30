@@ -241,7 +241,7 @@ class TicTacToe {
    * @public
    */
   getCurrentPlayer() {
-    return this.players[this.lastWinner ?? this.currentTurn];
+    return this.players[this.currentTurn];
   }
 
   /**

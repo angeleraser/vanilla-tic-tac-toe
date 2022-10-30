@@ -41,22 +41,26 @@ class OnlineTicTacToe extends TicTacToe {
       this.showOverlay("Waiting for the other party...");
       console.log(`Connected to room: ${this.roomid}.`);
 
-      this.onBoardClick(({ cellValue, coords }) => {
+      this.onBoardClick(({ player, coords }) => {
         this.socket.emit(
           EVENTS.BOARD_CLICK,
-          this.getEventPayload({ cellValue, coords })
+          this.getEventPayload({ cellValue: player.key, coords, player })
         );
 
         if (!this.playerKey) this.playerKey = cellValue;
 
-        const isDone = this.writeBoardCell(cellValue, coords);
+        const isDone = this.writeBoardCell({
+          value: player.key,
+          coords,
+          player,
+        });
 
         if (
           ((isDone || this.state.isDraw) &&
             this.playerKey === this.lastWinner) ||
           (this.state.isDraw &&
             !this.lastWinner &&
-            this.playerKey === this.PLAYERS.X)
+            this.playerKey === this.PLAYERS_KEYS.X)
         ) {
           this.resetTurnState();
           return this.enableBoardWriting();
@@ -72,8 +76,13 @@ class OnlineTicTacToe extends TicTacToe {
       );
 
       this.socket.on(EVENTS.BOARD_CLICK, (payload) => {
-        const { cellValue, coords } = payload;
-        const isDone = this.writeBoardCell(cellValue, coords);
+        const { cellValue, coords, player } = payload;
+
+        const isDone = this.writeBoardCell({
+          value: cellValue,
+          coords,
+          player,
+        });
 
         if (
           (this.state.isDraw && this.playerKey === this.lastWinner) ||
