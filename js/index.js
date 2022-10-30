@@ -30,7 +30,7 @@ roomJoinScreenEl.hide();
 
 const baseClientConfig = {
   animationDuration: 0.3,
-  boardSize: 5,
+  boardSize: 3,
   renderRoot: rootEl,
   roomid: "tic-tac-toe",
 };

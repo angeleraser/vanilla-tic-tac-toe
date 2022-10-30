@@ -36,10 +36,14 @@ class OfflineTicTacToe extends TicTacToe {
     this.disableBoardWriting();
 
     setTimeout(() => {
-      const value = this.state.isX ? this.PLAYERS.X : this.PLAYERS.O;
+      const value = this.PLAYERS.O;
       const coords = this.getCellCoords(this.getRandomCell());
+      const isEnded = this.writeBoardCell(value, coords);
 
-      this.writeBoardCell(value, coords);
+      if (isEnded && this.lastWinner === this.PLAYERS.O) {
+        return setTimeout(this.writeCPUCell.bind(this), 1500);
+      }
+
       this.enableBoardWriting();
     }, 1500);
   }
