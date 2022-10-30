@@ -46,6 +46,7 @@
 
 .board-cell.cell-fade-out {
   animation-name: cell-fade-out;
+  cursor: not-allowed;
 }
 
 @keyframes cell-fade-out {

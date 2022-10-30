@@ -58,14 +58,13 @@ class OnlineTicTacToe extends TicTacToe {
           value,
           coords,
         });
-        const hasWinnerKey = this.lastWinner === this.playerKey;
 
         if (isFinalized) {
-          if ((hasWinnerKey && this.state.isDraw) || hasWinnerKey) {
+          if ((this.isWinner && this.state.isDraw) || this.isWinner) {
             this.enableBoardWriting();
           }
 
-          isFinalized && this.resetTurnState();
+          this.resetTurnState();
         }
       });
 
@@ -83,12 +82,11 @@ class OnlineTicTacToe extends TicTacToe {
           value: cellValue,
           coords,
         });
-        const hasWinnerKey = this.lastWinner === this.playerKey;
 
         if (isFinalized) {
-          if (!hasWinnerKey) this.disableBoardWriting();
+          if (!this.isWinner) this.disableBoardWriting();
 
-          if (this.state.isDraw && hasWinnerKey) this.enableBoardWriting();
+          if (this.state.isDraw && this.isWinner) this.enableBoardWriting();
 
           this.resetTurnState();
         }
@@ -170,6 +168,13 @@ class OnlineTicTacToe extends TicTacToe {
       this.socket?.disconnect();
       callback && callback();
     });
+  }
+
+  /**
+   * @private
+   */
+  get isWinner() {
+    return this.playerKey === this.lastWinner;
   }
 
   /**
