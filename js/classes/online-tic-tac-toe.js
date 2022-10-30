@@ -58,10 +58,15 @@ class OnlineTicTacToe extends TicTacToe {
           value,
           coords,
         });
+        const hasWinnerKey = this.lastWinner === this.playerKey;
 
-        if (this.lastWinner === this.playerKey) this.enableBoardWriting();
+        if (isFinalized) {
+          if ((hasWinnerKey && this.state.isDraw) || hasWinnerKey) {
+            this.enableBoardWriting();
+          }
 
-        isFinalized && this.resetTurnState();
+          isFinalized && this.resetTurnState();
+        }
       });
 
       this.socket.emit(
@@ -78,12 +83,15 @@ class OnlineTicTacToe extends TicTacToe {
           value: cellValue,
           coords,
         });
+        const hasWinnerKey = this.lastWinner === this.playerKey;
 
-        if (this.lastWinner !== this.playerKey && isFinalized) {
-          this.disableBoardWriting();
+        if (isFinalized) {
+          if (!hasWinnerKey) this.disableBoardWriting();
+
+          if (this.state.isDraw && hasWinnerKey) this.enableBoardWriting();
+
+          this.resetTurnState();
         }
-
-        isFinalized && this.resetTurnState();
       });
 
       this.socket.on(EVENTS.TWO_PLAYERS_JOIN, ({ socketId }) => {
