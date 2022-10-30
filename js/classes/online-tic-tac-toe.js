@@ -141,6 +141,7 @@ class OnlineTicTacToe extends TicTacToe {
         this.destroy();
         this.socket?.disconnect();
         onUnableToConnect();
+        this.removeDisconnectOnTabChangeHandler();
       }
     }, 10000);
   }
@@ -163,6 +164,7 @@ class OnlineTicTacToe extends TicTacToe {
       this.destroy();
       this.socket.disconnect();
       callback && callback();
+      this.removeDisconnectOnTabChangeHandler();
 
       console.warn("You has been disconnected from server.");
     });
@@ -207,10 +209,25 @@ class OnlineTicTacToe extends TicTacToe {
   /**
    * @private
    */
+  handleVisibilityChange() {
+    if (document.visibilityState === "hidden") location.reload();
+  }
+
+  /**
+   * @private
+   */
   disconnectOnTabChange() {
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "hidden") location.reload();
-    });
+    document.addEventListener("visibilitychange", this.handleVisibilityChange);
+  }
+
+  /**
+   * @private
+   */
+  removeDisconnectOnTabChangeHandler() {
+    document.removeEventListener(
+      "visibilitychange",
+      this.handleVisibilityChange
+    );
   }
 
   /**
