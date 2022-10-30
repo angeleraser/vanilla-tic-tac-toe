@@ -5,6 +5,7 @@
   margin: 24px 0;
   position: relative;
   width: 100%;
+  transition: all 0.3s;
 }
 
 .board-cell,
@@ -54,6 +55,11 @@
     translate: 0 50%;
     opacity: 0;
   }
+}
+
+.board-disabled {
+  opacity: 0.75;
+  background-color: rgba(0, 0, 0, 0.025);
 }
 
 .board-disabled .board-cell {
