@@ -75,7 +75,13 @@ class OnlineTicTacToe extends TicTacToe {
         });
 
         if (isFinalized) {
-          if ((this.isWinner && this.state.isDraw) || this.isWinner) {
+          const isFirstDraw = !this.lastWinner && this.state.isDraw;
+
+          if (
+            (this.isWinner && this.state.isDraw) ||
+            this.isWinner ||
+            isFirstDraw
+          ) {
             this.enableBoardWriting();
           }
 
