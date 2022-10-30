@@ -104,13 +104,12 @@
 .board-actions-container {
   width: 100%;
   display: flex;
-  justify-content: center;
   justify-content: space-between;
+  flex-shrink: 0;
 }
 
 .score-container {
   font-weight: 700;
-  padding-bottom: 24px;
 }
 
 .player {
@@ -138,6 +137,7 @@
   border: none;
   color: var(--dark-gray);
   text-decoration: underline;
+  line-height: 1;
 }
 
 .board-loading-overlay {
