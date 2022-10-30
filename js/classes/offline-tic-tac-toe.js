@@ -10,11 +10,11 @@ class OfflineTicTacToe extends TicTacToe {
 
     this.onBoardClick(({ cellValue, coords }) => {
       const isDone = this.writeBoardCell(cellValue, coords);
+
       if (!isDone && this.playersCount === 1) return this.writeCPUCell();
+
       isDone && this.resetTurnState();
     });
-
-    this.onReset(this.resetAllStats.bind(this));
   }
 
   /**
@@ -35,17 +35,20 @@ class OfflineTicTacToe extends TicTacToe {
   writeCPUCell() {
     this.disableBoardWriting();
 
+    const delay = 1500;
+
     setTimeout(() => {
-      const value = this.PLAYERS.O;
-      const coords = this.getCellCoords(this.getRandomCell());
-      const isEnded = this.writeBoardCell(value, coords);
+      const isEnded = this.writeBoardCell(
+        this.PLAYERS.O,
+        this.getCellCoords(this.getRandomCell())
+      );
 
       if (isEnded && this.lastWinner === this.PLAYERS.O) {
-        return setTimeout(this.writeCPUCell.bind(this), 1500);
+        return setTimeout(this.writeCPUCell.bind(this), delay);
       }
 
       this.enableBoardWriting();
-    }, 1500);
+    }, delay);
   }
 }
 

@@ -66,11 +66,6 @@ class OnlineTicTacToe extends TicTacToe {
         this.disableBoardWriting();
       });
 
-      this.onReset(() => {
-        this.resetAllStats();
-        this.socket.emit(EVENTS.RESET, this.getEventPayload());
-      });
-
       this.socket.emit(
         "join-room",
         this.getEventPayload({ roomid: this.roomid })
@@ -120,8 +115,6 @@ class OnlineTicTacToe extends TicTacToe {
           `Unable to join room: ${this.roomid}. Room is already full.`
         );
       });
-
-      this.socket.on(EVENTS.RESET, () => this.resetAllStats());
 
       this.socket.on(EVENTS.MATCH_READY, () => {
         this.hideOverlay();

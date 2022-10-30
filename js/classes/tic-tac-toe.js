@@ -135,11 +135,9 @@ class TicTacToe {
    */
   destroy() {
     if (this.isDestroyed) return;
-
     this.renderRoot.removeChild(this.scoreEl);
     this.renderRoot.removeChild(this.boardEl);
     this.renderRoot.removeChild(this.actionsEl);
-    this.resetAllStats();
     this.isDestroyed = true;
   }
 
@@ -204,26 +202,6 @@ class TicTacToe {
 
     this.addNewMove(value, coords);
     return this.checkForAxiesMatch(value);
-  }
-
-  /**
-   * @public
-   */
-  resetAllStats() {
-    this.setState({
-      gameBoard: createBoardTemplate(this.boardSize),
-      isX: true,
-      isEnded: false,
-      movesCount: 0,
-      score: {
-        x: 0,
-        o: 0,
-        draw: 0,
-      },
-      isDraw: false,
-    });
-
-    this.renderHTML();
   }
 
   /**
