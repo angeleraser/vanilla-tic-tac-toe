@@ -102,6 +102,7 @@ class TicTacToe {
       gameBoard: createBoardTemplate(options.boardSize),
       isX: true,
       isEnded: false,
+      isDraw: false,
       movesCount: 0,
       score: {
         x: 0,
@@ -219,6 +220,7 @@ class TicTacToe {
         o: 0,
         draw: 0,
       },
+      isDraw: false,
     });
 
     this.renderHTML();
@@ -289,6 +291,7 @@ class TicTacToe {
 
     isMatch && this.decorateWinnerCells(axis);
     isMatch && (this.lastWinner = cellValue);
+    this.state.isDraw = !isMatch;
 
     const key = isMatch ? cellValue : "draw";
     this.updateScore(key);
@@ -297,14 +300,13 @@ class TicTacToe {
     return true;
   }
 
-  /**
-   * @private
-   */
   resetTurnState() {
     this.state.isEnded = false;
-    this.state.isX = this.lastWinner === this.PLAYERS.X;
+    this.state.isX =
+      this.lastWinner === this.PLAYERS.X || this.lastWinner === null;
     this.state.movesCount = 0;
     this.state.gameBoard = createBoardTemplate(this.boardSize);
+    this.state.isDraw = false;
   }
 
   /**
@@ -323,7 +325,6 @@ class TicTacToe {
 
     resetDelay += (accumDelay / (this.boardSize * 0.1)) * 80 + 500;
 
-    this.resetTurnState();
     this.disableBoardHTML();
     const wasEnabled = this.allowBoardWriting;
     setTimeout(this.showDispelBoardAnimation.bind(this), resetDelay);
@@ -393,21 +394,12 @@ class TicTacToe {
    */
   createActionsHTML() {
     const container = this.createHTMLWrapper(["board-actions-container"]);
-    const resetBtn = document.createElement("button");
     const quitBtn = document.createElement("button");
-
-    resetBtn.dataset.id = "reset-btn";
-    resetBtn.textContent = "Reset";
-    resetBtn.classList.add("reset-btn");
 
     quitBtn.dataset.id = "quit-btn";
     quitBtn.textContent = "Quit";
-
-    resetBtn.classList.add("reset-btn");
     quitBtn.classList.add("reset-btn");
-
     container.appendChild(quitBtn);
-    container.appendChild(resetBtn);
 
     const turnIndicator = this.createHTMLWrapper(["turn-indicator-container"]);
     turnIndicator.innerHTML += `

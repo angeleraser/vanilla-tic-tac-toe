@@ -9,9 +9,9 @@ class OfflineTicTacToe extends TicTacToe {
     this.render();
 
     this.onBoardClick(({ cellValue, coords }) => {
-      const enableCPU = !this.writeBoardCell(cellValue, coords);
-
-      if (enableCPU && this.playersCount === 1) this.writeCPUCell();
+      const isDone = this.writeBoardCell(cellValue, coords);
+      if (!isDone && this.playersCount === 1) return this.writeCPUCell();
+      isDone && this.resetTurnState();
     });
 
     this.onReset(this.resetAllStats.bind(this));

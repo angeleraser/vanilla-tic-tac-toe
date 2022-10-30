@@ -51,10 +51,18 @@ class OnlineTicTacToe extends TicTacToe {
 
         const isDone = this.writeBoardCell(cellValue, coords);
 
-        if (isDone && this.playerKey === this.lastWinner) {
+        if (
+          ((isDone || this.state.isDraw) &&
+            this.playerKey === this.lastWinner) ||
+          (this.state.isDraw &&
+            !this.lastWinner &&
+            this.playerKey === this.PLAYERS.X)
+        ) {
+          this.resetTurnState();
           return this.enableBoardWriting();
         }
 
+        isDone && this.resetTurnState();
         this.disableBoardWriting();
       });
 
@@ -70,13 +78,22 @@ class OnlineTicTacToe extends TicTacToe {
 
       this.socket.on(EVENTS.BOARD_CLICK, (payload) => {
         const { cellValue, coords } = payload;
-
         const isDone = this.writeBoardCell(cellValue, coords);
 
+        if (
+          (this.state.isDraw && this.playerKey === this.lastWinner) ||
+          (this.state.isDraw && !this.lastWinner)
+        ) {
+          this.resetTurnState();
+          return this.enableBoardWriting();
+        }
+
         if (isDone && this.playerKey !== this.lastWinner) {
+          this.resetTurnState();
           return this.disableBoardWriting();
         }
 
+        isDone && this.resetTurnState();
         this.enableBoardWriting();
       });
 
