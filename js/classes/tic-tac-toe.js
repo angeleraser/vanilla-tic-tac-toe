@@ -73,6 +73,14 @@ function evalBoardAxies(board = [], key = "") {
   return { isMatch, axis: wAxis };
 }
 
+export class TicTacToePlayer {
+  constructor({ name, key, role }) {
+    this.name = name;
+    this.key = key;
+    this.role = role;
+  }
+}
+
 class TicTacToe {
   constructor(
     options = {
@@ -88,28 +96,34 @@ class TicTacToe {
     this.playersCount = options.players || 1;
     this.roomid = options.roomid;
     this.totalCells = Math.pow(options.boardSize, 2);
-    this.actionsEl = this.createActionsHTML();
-    this.boardEl = this.createHTMLWrapper(["board-container"]);
-    this.overlayEl = this.createHTMLWrapper(["board-loading-overlay"]);
     this.renderRoot = options.renderRoot;
-    this.PLAYERS = { X: "x", O: "o" };
-    this.scoreEl = this.createScoreHTML();
+    this.PLAYERS_KEYS = { X: "x", O: "o" };
+    this.PLAYERS_ROLES = { HOME: "home", VISITOR: "visitor" };
     this.isDestroyed = false;
     this.lastWinner = null;
     this.isShowOverlay = false;
 
     this.state = {
       gameBoard: createBoardTemplate(options.boardSize),
-      isX: true,
       isEnded: false,
       isDraw: false,
       movesCount: 0,
       score: {
-        x: 0,
-        o: 0,
+        [this.PLAYERS_ROLES.HOME]: 0,
+        [this.PLAYERS_ROLES.VISITOR]: 0,
         draw: 0,
       },
     };
+    this.players = {
+      [this.PLAYERS_ROLES.HOME]: null,
+      [this.PLAYERS_ROLES.VISITOR]: null,
+    };
+    this.currentTurn = this.PLAYERS_ROLES.HOME;
+
+    this.boardEl = this.createHTMLWrapper(["board-container"]);
+    this.overlayEl = this.createHTMLWrapper(["board-loading-overlay"]);
+    this.actionsEl = null;
+    this.scoreEl = null;
   }
 
   /**
@@ -123,6 +137,9 @@ class TicTacToe {
    * @public
    */
   render() {
+    this.actionsEl = this.createActionsHTML();
+    this.scoreEl = this.createScoreHTML();
+
     this.renderRoot.appendChild(this.scoreEl);
     this.renderRoot.appendChild(this.boardEl);
     this.renderRoot.appendChild(this.actionsEl);
@@ -144,37 +161,43 @@ class TicTacToe {
   /**
    * @public
    */
-  onBoardClick(callback = (e) => {}) {
-    this.boardEl.addEventListener("click", (e) => {
-      const { target: cell } = e;
-
-      const isBoardDisabled =
-        !this.allowBoardWriting ||
-        this.boardEl.className.includes("board-disabled") ||
-        cell.style.cursor === "not-allowed";
-
-      if (
-        cell.tagName !== "BUTTON" ||
-        this.state.isEnded ||
-        cell.dataset.value ||
-        isBoardDisabled
-      ) {
-        return e.preventDefault();
-      }
-
-      void callback({
-        coords: this.getCellCoords(cell),
-        cellValue: this.state.isX ? this.PLAYERS.X : this.PLAYERS.O,
-      });
-    });
+  joinPlayer(player) {
+    this.players[player.role] = player;
   }
 
   /**
    * @public
    */
-  onReset(callback = (e) => {}) {
-    const resetBtn = this.actionsEl.querySelector('[data-id="reset-btn"]');
-    resetBtn?.addEventListener("click", callback);
+  onBoardClick(callback = (e) => {}) {
+    this.boardEl.addEventListener("click", (e) => {
+      const { target: cell } = e;
+
+      if (this.shouldPreventBoardClick(e)) return e.preventDefault();
+
+      void callback({
+        coords: this.getCellCoords(cell),
+        player: this.getCurrentPlayer(),
+      });
+    });
+  }
+
+  /**
+   * @private
+   */
+  shouldPreventBoardClick(e) {
+    const { target: cell } = e;
+
+    const isBoardDisabled =
+      !this.allowBoardWriting ||
+      this.boardEl.className.includes("board-disabled") ||
+      cell.style.cursor === "not-allowed";
+
+    return (
+      cell.tagName !== "BUTTON" ||
+      this.state.isEnded ||
+      cell.dataset.value ||
+      isBoardDisabled
+    );
   }
 
   /**
@@ -192,16 +215,33 @@ class TicTacToe {
   /**
    * @public
    */
-  writeBoardCell(value = "", coords = []) {
+  writeBoardCell({ value = "", coords = [], player }) {
     const cellEl = this.boardEl.querySelector(`[data-coords="${coords}"]`);
-
-    if (!cellEl) return;
 
     cellEl.textContent = value;
     cellEl.dataset.value = value;
 
     this.addNewMove(value, coords);
-    return this.checkForAxiesMatch(value);
+    return this.checkForAxiesMatch(value, player);
+  }
+
+  /**
+   * @private
+   */
+  setCurrentTurnRole() {
+    const roles = {
+      [this.PLAYERS_ROLES.HOME]: this.PLAYERS_ROLES.VISITOR,
+      [this.PLAYERS_ROLES.VISITOR]: this.PLAYERS_ROLES.HOME,
+    };
+
+    this.currentTurn = roles[this.currentTurn];
+  }
+
+  /**
+   * @public
+   */
+  getCurrentPlayer() {
+    return this.players[this.lastWinner ?? this.currentTurn];
   }
 
   /**
@@ -233,15 +273,20 @@ class TicTacToe {
   renderHTML() {
     Object.keys(this.state.score).forEach(this.renderScoreHTML.bind(this));
     this.renderBoardHTML(this.boardSize);
-    this.setTurnIndicatorHTML();
   }
 
+  /**
+   * @public
+   */
   showOverlay(msg = "") {
     this.overlayEl.textContent = msg;
     this.renderRoot.appendChild(this.overlayEl);
     this.isShowOverlay = true;
   }
 
+  /**
+   * @public
+   */
   hideOverlay() {
     this.overlayEl.textContent = "";
     this.isShowOverlay && this.renderRoot.removeChild(this.overlayEl);
@@ -253,25 +298,24 @@ class TicTacToe {
    */
   addNewMove(cellValue = "", coords = []) {
     this.state.gameBoard[coords[0]][coords[1]] = cellValue;
-    this.state.isX = !this.state.isX;
+    this.setCurrentTurnRole();
     this.state.movesCount += 1;
-    this.setTurnIndicatorHTML();
   }
 
   /**
    * @private
    */
-  checkForAxiesMatch(cellValue = "") {
+  checkForAxiesMatch(cellValue = "", player) {
     const { isMatch, axis } = evalBoardAxies(this.state.gameBoard, cellValue);
     this.state.isEnded = isMatch || this.state.movesCount === this.totalCells;
 
     if (!this.state.isEnded) return false;
 
     isMatch && this.decorateWinnerCells(axis);
-    isMatch && (this.lastWinner = cellValue);
     this.state.isDraw = !isMatch;
+    this.lastWinner = isMatch ? player.role : this.lastWinner;
 
-    const key = isMatch ? cellValue : "draw";
+    const key = isMatch ? player.role : "draw";
     this.updateScore(key);
     this.finalizeTurn(key);
 
@@ -280,8 +324,7 @@ class TicTacToe {
 
   resetTurnState() {
     this.state.isEnded = false;
-    this.state.isX =
-      this.lastWinner === this.PLAYERS.X || this.lastWinner === null;
+    this.currentTurn = this.lastWinner ?? this.PLAYERS_ROLES.HOME;
     this.state.movesCount = 0;
     this.state.gameBoard = createBoardTemplate(this.boardSize);
     this.state.isDraw = false;
@@ -347,7 +390,11 @@ class TicTacToe {
    */
   createScoreHTML() {
     const div = this.createHTMLWrapper(["score-container"]);
-    const players = [this.PLAYERS.X, "draw", this.PLAYERS.O];
+    const players = [
+      this.PLAYERS_ROLES.HOME,
+      "draw",
+      this.PLAYERS_ROLES.VISITOR,
+    ];
 
     players.forEach((p) => {
       const pContainer = this.createHTMLWrapper(["player", `player-${p}`]);
@@ -378,18 +425,6 @@ class TicTacToe {
     quitBtn.textContent = "Quit";
     quitBtn.classList.add("reset-btn");
     container.appendChild(quitBtn);
-
-    const turnIndicator = this.createHTMLWrapper(["turn-indicator-container"]);
-    turnIndicator.innerHTML += `
-      Current turn:
-          <div class="turn-indicator">
-            <span class="player-x-indicator">x</span>
-            <span class="player-o-indicator">o</span>
-          </div>
-        </div>
-    `;
-
-    container.appendChild(turnIndicator);
 
     return container;
   }
@@ -469,23 +504,6 @@ class TicTacToe {
     const suffix = label !== "draw" ? " Wins" : "";
     const el = this.scoreEl.querySelector(`[data-id="${label}"]`);
     el && (el.textContent = `${this.state.score[label]}${suffix}`);
-  }
-
-  /**
-   * @private
-   */
-  setTurnIndicatorHTML() {
-    this.actionsEl
-      .querySelector(
-        `.player-${this.state.isX ? this.PLAYERS.X : this.PLAYERS.O}-indicator`
-      )
-      .classList.add("active");
-
-    this.actionsEl
-      .querySelector(
-        `.player-${!this.state.isX ? this.PLAYERS.X : this.PLAYERS.O}-indicator`
-      )
-      .classList.remove("active");
   }
 
   /**

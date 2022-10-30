@@ -76,7 +76,8 @@
 }
 
 .board-cell[data-value="x"],
-.player-x {
+.board-cell[data-role="home"],
+.player-home {
   color: var(--blue);
 }
 
@@ -86,7 +87,8 @@
 }
 
 .board-cell[data-value="o"],
-.player-o {
+.board-cell[data-role="visitor"],
+.player-visitor {
   color: var(--turquoise);
 }
 
@@ -166,11 +168,11 @@
   color: white;
 }
 
-.player-x-indicator.active {
+.player-home-indicator.active {
   background-color: var(--blue);
 }
 
-.player-o-indicator.active {
+.player-o-indicavisitoror.active {
   background-color: var(--turquoise);
 }
 

@@ -1,4 +1,4 @@
-import { TicTacToe } from "./tic-tac-toe.js";
+import { TicTacToe, TicTacToePlayer } from "./tic-tac-toe.js";
 
 class OfflineTicTacToe extends TicTacToe {
   constructor(options) {
@@ -6,14 +6,34 @@ class OfflineTicTacToe extends TicTacToe {
   }
 
   init() {
+    this.joinPlayer(
+      new TicTacToePlayer({
+        name: "Player",
+        key: "x",
+        role: this.PLAYERS_ROLES.HOME,
+      })
+    );
+
+    this.joinPlayer(
+      new TicTacToePlayer({
+        name: "CPU",
+        key: "o",
+        role: this.PLAYERS_ROLES.VISITOR,
+      })
+    );
+
     this.render();
 
-    this.onBoardClick(({ cellValue, coords }) => {
-      const isDone = this.writeBoardCell(cellValue, coords);
+    this.onBoardClick(({ player, coords }) => {
+      const isFinalized = this.writeBoardCell({
+        value: player.key,
+        coords,
+        player,
+      });
 
-      if (!isDone && this.playersCount === 1) return this.writeCPUCell();
+      if (!isFinalized && this.playersCount === 1) this.writeCPUCell();
 
-      isDone && this.resetTurnState();
+      isFinalized && this.resetTurnState();
     });
   }
 
@@ -35,15 +55,18 @@ class OfflineTicTacToe extends TicTacToe {
   writeCPUCell() {
     this.disableBoardWriting();
 
+    const cpuPlayer = this.players.visitor;
     const delay = 1500;
 
     setTimeout(() => {
-      const isEnded = this.writeBoardCell(
-        this.PLAYERS.O,
-        this.getCellCoords(this.getRandomCell())
-      );
+      const isFinalized = this.writeBoardCell({
+        value: cpuPlayer.key,
+        coords: this.getCellCoords(this.getRandomCell()),
+        player: cpuPlayer,
+      });
 
-      if (isEnded && this.lastWinner === this.PLAYERS.O) {
+      if (isFinalized && this.lastWinner === cpuPlayer.role) {
+        this.resetTurnState();
         return setTimeout(this.writeCPUCell.bind(this), delay);
       }
 
