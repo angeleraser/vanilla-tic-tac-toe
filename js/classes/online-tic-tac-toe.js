@@ -1,6 +1,6 @@
 import { TicTacToe } from "./tic-tac-toe.js";
 
-const PROD_SERVER_URL = "https://tic-tac-toe-angel.herokuapp.com/";
+const PROD_SERVER_URL = "https://vanilla-tic-tac-toe-angeleraser.onrender.com";
 const DEV_SERVER_URL = "http://localhost:3000";
 
 window.mobileAndTabletCheck = function () {
